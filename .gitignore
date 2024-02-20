@@ -1,0 +1,5 @@
+node_modules/
+node-windows-forms/form.js
+script.js
+package.json
+package-lock.json
