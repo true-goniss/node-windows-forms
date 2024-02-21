@@ -1,14 +1,53 @@
+/*
+
+by gon_iss (c) 2o24
+
+*/
+
 'use strict';
 
-class TextBox {
-    constructor(name, text, getTextCallback) {
+
+class Control {
+    constructor(name, text, getTextCallback, setTextCallback) {
+        this.Name = name;
+        this.Text = text || '';
         this.formTextChanged = true;
 
-        this.Name = name;
-        this._text = text || '';
+        this.getTextCallback = getTextCallback;
+        this.setTextCallback = setTextCallback;
+    }
+
+    async _SetProperty(property, text){
+        this._text = text;   
+        await this.setTextCallback(this.Name, property, text);
+    }
+
+    async _GetProperty(property){
+        if (this.formTextChanged) {
+            const text = await this.getTextCallback(this.Name, property);
+            this._text = text;
+            this.formTextChanged = false;
+        }
+        return this._text;
+    }
+
+    async getText() {
+        return await this._GetProperty('Text');
+    }
+
+    async setText(text) {
+        await this._SetProperty('Text', text);
+    }
+
+}
+
+class TextBox extends Control {
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
 
         this._textChangedHandlers = [];
-        this.getTextCallback = getTextCallback;
+
     }
 
     OnTextChanged(handler){
@@ -21,32 +60,14 @@ class TextBox {
         this._textChangedHandlers.forEach(handler => handler());
     }
 
-    async getText() {
-        if (this.formTextChanged) {
-            const text = await this.getTextCallback(this.Name);
-            this._text = text;
-            this.formTextChanged = false;
-        }
-        return this._text;
-    }
-
-    async setText(text) {
-        this._text = text;   
-        await this.setTextCallback(this.Name, `Text`, text);
-    }
-
-    //AppendText(newText) {
-    //    this.text += newText;
-    //}
 }
 
-/* TODO AppendProperty */
-
-class Button {
+class Button extends Control {
     
-    constructor(name, text) {
-        this.Name = name;
-        this.Text = text || '';
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
         this._clickHandlers = [];
     }
 

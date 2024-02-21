@@ -1,6 +1,6 @@
 ﻿/*
 
- (с) gon_iss  2024
+ (с) gon_iss  2o24
 
  */
 
@@ -67,8 +67,8 @@ static class NodeControls
                 if (eventName != null)
                 {
                     script += "function " + eventName + "() { }" + newLineDouble();
-                    script += "const " + textbox.Name + " = new TextBox(`" + textbox.Name + "`,`" + textbox.Text + "`, async (name) => { return await getControlProperty(`" + textbox.Name + "`, 'Text'); }); " + newLineDouble();
-                    script += textbox.Name + "." + "setTextCallback = async (name, value) => { return await setControlProperty(`" + textbox.Name + "`, 'Text', " + textbox.Name + "._text" + "); };" + newLineDouble();
+                    script += "const " + textbox.Name + " = new TextBox(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property) => { return await setControlProperty(`" + control.Name + "`, property, " + control.Name + "._text" + "); }); " + newLineDouble();
+                    //script += textbox.Name + "." + "setTextCallback = ;" + newLineDouble();
 
                     script += textbox.Name + ".OnTextChanged(" + eventName + ");" + newLineDouble();
 
@@ -101,7 +101,7 @@ static class NodeControls
                 if(click != null)
                 {
                     script += "function " + click + "() { }" + newLineDouble();
-                    script += "const " + button.Name + " = new Button(`" + button.Name + "`,`" + button.Text + "`);" + newLineDouble();
+                    script += "const " + button.Name + " = new Button(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property) => { return await setControlProperty(`" + control.Name + "`, property, " + control.Name + "._text" + "); });" + newLineDouble();
                     script += button.Name + ".OnClick(" + click + ");" + newLineDouble();
 
                     eventsEmitClick += "if (data.includes(`" + click + "`))" + button.Name + ".Click();" + newLineDouble();
