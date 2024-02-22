@@ -67,7 +67,7 @@ static class NodeControls
                 if (eventName != null)
                 {
                     script += "function " + eventName + "() { }" + newLineDouble();
-                    script += "const " + textbox.Name + " = new TextBox(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property) => { return await setControlProperty(`" + control.Name + "`, property, " + control.Name + "._text" + "); }); " + newLineDouble();
+                    script += "const " + textbox.Name + " = new TextBox(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
                     //script += textbox.Name + "." + "setTextCallback = ;" + newLineDouble();
 
                     script += textbox.Name + ".OnTextChanged(" + eventName + ");" + newLineDouble();
@@ -101,7 +101,7 @@ static class NodeControls
                 if(click != null)
                 {
                     script += "function " + click + "() { }" + newLineDouble();
-                    script += "const " + button.Name + " = new Button(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property) => { return await setControlProperty(`" + control.Name + "`, property, " + control.Name + "._text" + "); });" + newLineDouble();
+                    script += "const " + button.Name + " = new Button(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
                     script += button.Name + ".OnClick(" + click + ");" + newLineDouble();
 
                     eventsEmitClick += "if (data.includes(`" + click + "`))" + button.Name + ".Click();" + newLineDouble();
@@ -421,7 +421,11 @@ return new Promise((resolve, reject) => {
 
             if (controlTag == tag)
             {
-                controlsWithTag.Add(childCtrl.Name, childCtrl);
+                try
+                {
+                    controlsWithTag.Add(childCtrl.Name, childCtrl);
+                }
+                catch(Exception ee) { }
             }
 
             controlsWithTag.Concat(TraverseSubControlsWithTag(childCtrl, tag));
