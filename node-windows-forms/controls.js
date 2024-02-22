@@ -13,8 +13,6 @@ class Control {
         this.Name = name;
         this.Text = text || '';
 
-        this.formTextChanged = true;
-
         this.getTextCallback = getTextCallback;
         this.setTextCallback = setTextCallback;
 
@@ -58,6 +56,23 @@ class Control {
         return Boolean( await this._GetProperty('Visible') );
     }
 
+    async setLocation(x, y){
+        return await this._SetProperty('Location', 'x:' + x.toString() + 'y:' + y.toString());
+    }
+
+    async getLocation(){
+        const location = JSON.parse( await this._GetProperty('Location') );
+        return { x: Number( location.x ), y: Number( location.y ), isEmpty: Boolean( location.isEmpty ) } ;
+    }
+
+    async setSize(width, height){
+        return await this._SetProperty('Size', 'w:' + width.toString() + 'h:' + height.toString());
+    }
+
+    async getSize(){
+        const size = JSON.parse( await this._GetProperty('Size') );
+        return { width: Number( size.width ), height: Number( size.height ) } ;
+    }
 }
 
 class TextBox extends Control {
@@ -65,18 +80,35 @@ class TextBox extends Control {
 
         super(name, text, getTextCallback, setTextCallback);
 
+        this.textWasChanged = true;
         this._textChangedHandlers = [];
-
     }
 
     OnTextChanged(handler){
-        this.formTextChanged = true;
+        this.textWasChanged = true;
         if (!this._textChangedHandlers.includes(handler)) this._textChangedHandlers.push(handler);
     }
 
     TextChanged(){
-        this.formTextChanged = true;
+        this.textWasChanged = true;
         this._textChangedHandlers.forEach(handler => handler());
+    }
+
+    async getText(){
+        if( this.textWasChanged ){
+            this.lastText = await super.getText();
+            this.textWasChanged = false;
+            return this.lastText;
+        }
+        
+        return this.lastText;
+    }
+
+    async setText(text){
+        this.lastText = text;
+        this.textWasChanged = false;
+
+        super.setText();
     }
 
     async setUseSystemPasswordChar(useSystemPasswordChar) {
@@ -94,12 +126,10 @@ class TextBox extends Control {
 
     async getPasswordChar() {
         return await this._GetProperty('PasswordChar');
-    }
-    */
+    }*/
 }
 
-class Button extends Control {
-    
+class ClickableControl extends Control{
     constructor(name, text, getTextCallback, setTextCallback) {
 
         super(name, text, getTextCallback, setTextCallback);
@@ -114,10 +144,92 @@ class Button extends Control {
     Click() {
         this._clickHandlers.forEach(handler => handler());
     }
+}
+
+class Button extends ClickableControl {
+    
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
+    }
 
 }
 
+class Label extends ClickableControl {
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
+    }
+
+}
+
+class CheckableButton extends Button {
+    constructor(name, text, getTextCallback, setTextCallback) {
+        super(name, text, getTextCallback, setTextCallback);
+        //this.checked = false;
+    }
+
+    async setChecked(checked) {
+        return await this._SetProperty('Checked', Boolean( checked ) );
+    }
+
+    async getChecked() {
+        return Boolean( await this._GetProperty('Checked') );
+    }
+
+    async setAppearance(appearance){
+        return await this._SetProperty('Appearance', appearance );
+    }
+
+    async getAppearance() {
+        return Number( await this._GetProperty('Appearance') );
+    }
+
+    async setAppearanceNormal(){
+        return await setAppearance(AppearanceCheckable.NORMAL);
+    }
+
+    async setAppearanceButton(){
+        return await setAppearance(AppearanceCheckable.BUTTON);
+    }
+
+}
+
+const AppearanceCheckable = {
+    NORMAL: 0,
+    BUTTON: 1
+};
+
+class RadioButton extends CheckableButton {
+
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
+    }
+
+}
+
+class CheckBox extends CheckableButton {
+
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
+    }
+
+}
+
+
+
 module.exports = {
     TextBox,
-    Button
+    Button,
+    Label,
+    RadioButton,
+    CheckBox,
+
+    AppearanceCheckable
 };

@@ -20,11 +20,19 @@ static class NodeControls
 
     static Dictionary<string, Control> controls;
 
+    static string script = "`use strict`;" + newLineDouble();
+    static string eventsEmitClick = "";
+    static string eventsEmitTextBoxTextChanged = "";
+    static string usedNames = "";
+
     public static async void Generate(Form form, string tag, string outputPath)
     {
         controls = TraverseSubControlsWithTag(form, "null");
 
-        string script = "`use strict`;" + newLineDouble();
+        script = "`use strict`;" + newLineDouble();
+        eventsEmitClick = "";
+        eventsEmitTextBoxTextChanged = "";
+        usedNames = "";
 
         socketPort = 12000;
 
@@ -35,23 +43,35 @@ static class NodeControls
 
         script += scriptWebsocket(socketPort) + newLineDouble();
 
-        script += "const { TextBox, Button } = require(`./controls`);" + newLineDouble();
+        script += "const { TextBox, Button, Label, RadioButton, CheckBox } = require(`./controls`);" + newLineDouble();
 
-        string eventsEmitClick = "";
-        string eventsEmitTextBoxTextChanged = "";
-
-        string usedNames = "";
 
         foreach (Control control in controls.Values)
         {
+            if(control is Label)
+            {
+                script += "const " + control.Name + " = new Label(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
+                usedNames += control.Name + "," + Environment.NewLine;
+
+                bool clicklinked = LinkClickToJavascriptControl(control);
+            }
+
             if (control is CheckBox)
             {
-                    CheckBox checkbox = control as CheckBox;
+
+                script += "const " + control.Name + " = new CheckBox(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
+                usedNames += control.Name + "," + Environment.NewLine;
+
+                bool clicklinked = LinkClickToJavascriptControl(control);
+
             }
 
             if (control is RadioButton)
             {
-                    RadioButton radiobutton = control as RadioButton;
+                script += "const " + control.Name + " = new RadioButton(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
+                usedNames += control.Name + "," + Environment.NewLine;
+
+                bool clicklinked = LinkClickToJavascriptControl(control);
             }
 
             if (control is TextBox)
@@ -145,6 +165,27 @@ static class NodeControls
             MessageBox.Show("NodeControls: error while saving"); }
 
         //if(accessSuccess) MessageBox.Show("NodeControls: nodejs script of controls saved"); 
+    }
+
+    static bool LinkClickToJavascriptControl(Control control)
+    {
+        if (!addedButtonClickEventNames.Contains(control.Name))
+        {
+            addedButtonClickEventNames += control.Name + ";";
+            control.Click += Button_Click;
+        }
+
+        string click = GetEventName(control, "Click");
+        if (click != null)
+        {
+            script += "function " + click + "() { }" + newLineDouble();
+            script += control.Name + ".OnClick(" + click + ");" + newLineDouble();
+
+            eventsEmitClick += "if (data.includes(`" + click + "`))" + control.Name + ".Click();" + newLineDouble();
+            usedNames += click.ToString() + "," + newLineDouble();
+        }
+
+        return true;
     }
 
     static string addedButtonClickEventNames = "";
@@ -282,7 +323,33 @@ return new Promise((resolve, reject) => {
 
         websocket.Opened += new EventHandler(websocket_Opened);
         websocket.MessageReceived += websocket_MessageReceived;
+        websocket.Closed += Websocket_Closed;
         websocket.Open();
+    }
+
+    static System.Timers.Timer reconnectTimer = null;
+
+    private static void Websocket_Closed(object? sender, EventArgs e)
+    {
+        if(reconnectTimer == null)
+        {
+            reconnectTimer = new System.Timers.Timer(1000);
+            reconnectTimer.Elapsed += ReconnectTimer_Elapsed;
+            reconnectTimer.AutoReset = true;
+            reconnectTimer.Start();
+        }
+
+    }
+
+    private static void ReconnectTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (websocket.State == WebSocketState.Connecting || websocket.State == WebSocketState.Open) return;
+
+        try
+        {
+            websocket.Open();
+        }
+        catch(Exception ex) { }
     }
 
     static DateTime lastMessageTime;
@@ -313,8 +380,41 @@ return new Promise((resolve, reject) => {
                     var property = control.GetType().GetProperty(propertyName);
                     if (property != null)
                     {
-                        string propertyValue = property.GetValue(control).ToString();
-                        websocket.Send(propertyValue);
+                        string propertyValue = "";
+
+                        if (property.PropertyType.IsEnum)
+                        {
+                            object enumValue = property.GetValue(control);
+
+                            Type underlyingType = Enum.GetUnderlyingType(property.PropertyType);
+
+                            if (enumValue.GetType() != underlyingType)
+                            {
+                                enumValue = Convert.ChangeType(enumValue, underlyingType);
+                            }
+
+                            propertyValue = enumValue.ToString();
+                            websocket.Send(propertyValue);
+                        }
+                        else if (propertyName == "Size")
+                        {
+                            Size size = (Size)property.GetValue(control);
+                            propertyValue = "{ \"width\": " + size.Width + ", \"height\": " + size.Height + " }";
+                            websocket.Send(propertyValue);
+                        }
+                        else if (property.PropertyType.Name == "Point")
+                        {
+                            Point point = (Point)property.GetValue(control);
+                            propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
+                            websocket.Send(propertyValue);
+                        }
+                        else
+                        {
+                            propertyValue = property.GetValue(control).ToString();
+                            websocket.Send(propertyValue);
+                        }
+
+                        
                     }
                     else
                     {
@@ -335,21 +435,44 @@ return new Promise((resolve, reject) => {
                 if (controls.TryGetValue(controlName, out Control control))
                 {
                     var property = control.GetType().GetProperty(propertyName);
-                    if (property != null)
-                    {
-                        string propertyValue = message.Split(':')[2];
+                    if (property == null) { websocket.Send("Property not found"); return; }
+                    object convertedValue = null;
 
-                        control.Invoke((MethodInvoker)delegate
-                        {
-                            // Convert propertyValue to the appropriate type if needed
-                            object convertedValue = Convert.ChangeType(propertyValue, property.PropertyType);
-                            property.SetValue(control, convertedValue);
-                        });
+
+
+                    string propertyValue = message.Split(':')[2];
+
+                    if (property.PropertyType.IsEnum)
+                    {
+                        convertedValue = Enum.Parse(property.PropertyType, propertyValue);
+                    }
+                    else if(property.PropertyType.Name == "Point")
+                    {
+                        string splitted = message.Split("x:")[1];
+                        string x = splitted.Split("y:")[0];
+                        string y = splitted.Split("y:")[1];
+                        Point point = new Point(Convert.ToInt32( x ), Convert.ToInt32( y ));
+                        convertedValue = point;
+                    }
+                    else if (propertyName == "Size")
+                    {
+                        string splitted = message.Split("w:")[1];
+                        string width = splitted.Split("h:")[0];
+                        string height = splitted.Split("h:")[1];
+
+                        Size size = new Size(Convert.ToInt32(width), Convert.ToInt32(height));
+                        convertedValue = size;
                     }
                     else
                     {
-                        websocket.Send("Property not found");
+                        convertedValue = Convert.ChangeType(propertyValue, property.PropertyType);
                     }
+
+                    control.Invoke((MethodInvoker)delegate
+                    {
+                        // Convert propertyValue to the appropriate type if needed
+                        property.SetValue(control, convertedValue);
+                    });
                 }
                 else
                 {
