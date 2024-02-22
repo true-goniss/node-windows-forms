@@ -9,6 +9,9 @@ Lightweight and easy-to-use GUI toolset for node js on windows. Compose your int
 ```csharp
 Button
 TextBox
+Label
+RadioButton
+CheckBox
 ```
 
 <br><br>
