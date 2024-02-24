@@ -21,7 +21,7 @@ static class NodeControls
     static Dictionary<string, Control> controls;
 
     static string script = "`use strict`;" + newLineDouble();
-    static string eventsEmitClick = "";
+    static string eventEmittersJS = "";
     static string eventsEmitTextBoxTextChanged = "";
     static string usedNames = "";
 
@@ -30,11 +30,11 @@ static class NodeControls
         controls = TraverseSubControlsWithTag(form, "null");
 
         script = "`use strict`;" + newLineDouble();
-        eventsEmitClick = "";
+        eventEmittersJS = "";
         eventsEmitTextBoxTextChanged = "";
         usedNames = "";
 
-        socketPort = 12000;
+        socketPort = FindFreePort();
 
         if (websocket == null)
         {
@@ -43,106 +43,70 @@ static class NodeControls
 
         script += scriptWebsocket(socketPort) + newLineDouble();
 
-        script += "const { TextBox, Button, Label, RadioButton, CheckBox } = require(`./controls`);" + newLineDouble();
-
+        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown } = require(`./controls`);" + newLineDouble();
+        script += "let variables = [];";
 
         foreach (Control control in controls.Values)
         {
             if(control is Label)
             {
-                script += "const " + control.Name + " = new Label(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
-                usedNames += control.Name + "," + Environment.NewLine;
+                DefineJS_Control(control, "Label");
 
-                bool clicklinked = LinkClickToJavascriptControl(control);
+                LinkJS_Event(control, "Click", Control_Click);
             }
 
             if (control is CheckBox)
             {
 
-                script += "const " + control.Name + " = new CheckBox(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
-                usedNames += control.Name + "," + Environment.NewLine;
+                DefineJS_Control(control, "CheckBox");
 
-                bool clicklinked = LinkClickToJavascriptControl(control);
-
+                LinkJS_Event(control, "Click", Control_Click);
+                LinkJS_Event(control, "CheckedChanged", Control_CheckedChanged);
             }
 
             if (control is RadioButton)
             {
-                script += "const " + control.Name + " = new RadioButton(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
-                usedNames += control.Name + "," + Environment.NewLine;
+                DefineJS_Control(control, "RadioButton");
 
-                bool clicklinked = LinkClickToJavascriptControl(control);
+                LinkJS_Event(control, "Click", Control_Click);
+                LinkJS_Event(control, "CheckedChanged", Control_CheckedChanged);
             }
 
             if (control is TextBox)
             {
-                TextBox textbox = control as TextBox;
+                DefineJS_Control(control, "TextBox");
 
-                if (!addedTextboxTextChangedEventNames.Contains(textbox.Name))
-                {
-                    textbox.TextChanged += TextBox_TextChanged;
-                }
-
-                string eventName = GetEventName(textbox, "TextChanged");
-                if (eventName != null)
-                {
-                    script += "function " + eventName + "() { }" + newLineDouble();
-                    script += "const " + textbox.Name + " = new TextBox(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
-                    //script += textbox.Name + "." + "setTextCallback = ;" + newLineDouble();
-
-                    script += textbox.Name + ".OnTextChanged(" + eventName + ");" + newLineDouble();
-
-                    eventsEmitTextBoxTextChanged += "if (data.includes(`" + eventName + "`)) { " + textbox.Name + ".TextChanged(); " + textbox.Name + ".formTextChanged = true;" + " }" + newLineDouble();
-
-                    usedNames += eventName.ToString() + "," + newLineDouble();
-                }
-                //eventEmitTextBoxTextChanged
-
-
-                usedNames += textbox.Name + "," + Environment.NewLine;
+                
+                LinkJS_Event(control, "TextChanged", Control_TextChanged);
+                LinkJS_Event(control, "Click", Control_Click);
             }
 
             if (control is NumericUpDown)
             {
-                    NumericUpDown numericupdown = control as NumericUpDown;
+                DefineJS_Control(control, "NumericUpDown");
+                LinkJS_Event(control, "Click", Control_Click);
+                LinkJS_Event(control, "ValueChanged", Control_ValueChanged);
+                
             }
 
             if (control is Button)
             {
-                Button button = control as Button;
-
-                if(!addedButtonClickEventNames.Contains(button.Name))
-                {
-                    addedButtonClickEventNames += button.Name + ";";
-                    button.Click += Button_Click;
-                }
-
-                string click = GetEventName(button, "Click");
-                if(click != null)
-                {
-                    script += "function " + click + "() { }" + newLineDouble();
-                    script += "const " + button.Name + " = new Button(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
-                    script += button.Name + ".OnClick(" + click + ");" + newLineDouble();
-
-                    eventsEmitClick += "if (data.includes(`" + click + "`))" + button.Name + ".Click();" + newLineDouble();
-
-                    usedNames += click.ToString() + "," + newLineDouble();
-                }
-
-                usedNames += button.Name + "," + newLineDouble();
+                DefineJS_Control(control, "Button");
+                LinkJS_Event(control, "Click", Control_Click);
             }
         }
 
+        //AddJS_ControlsIterator();
+
         usedNames += "getControlProperty,";
+
 
         usedNames = DeleteLastSymbol(usedNames, ',');
 
         script += Environment.NewLine + "module.exports = {" + newLineDouble();
         script += usedNames + Environment.NewLine + "};";
 
-        script = script.Replace("{{eventsEmitClick}}", eventsEmitClick);
-
-        script = script.Replace("{{eventsEmitTextBoxTextChanged}}", eventsEmitTextBoxTextChanged);
+        script = script.Replace("{{eventEmittersJS}}", eventEmittersJS);
 
         bool accessSuccess = false;
 
@@ -167,53 +131,159 @@ static class NodeControls
         //if(accessSuccess) MessageBox.Show("NodeControls: nodejs script of controls saved"); 
     }
 
-    static bool LinkClickToJavascriptControl(Control control)
+    public static int FindFreePort()
     {
-        if (!addedButtonClickEventNames.Contains(control.Name))
-        {
-            addedButtonClickEventNames += control.Name + ";";
-            control.Click += Button_Click;
-        }
-
-        string click = GetEventName(control, "Click");
-        if (click != null)
-        {
-            script += "function " + click + "() { }" + newLineDouble();
-            script += control.Name + ".OnClick(" + click + ");" + newLineDouble();
-
-            eventsEmitClick += "if (data.includes(`" + click + "`))" + control.Name + ".Click();" + newLineDouble();
-            usedNames += click.ToString() + "," + newLineDouble();
-        }
-
-        return true;
+        System.Net.Sockets.TcpListener listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
     }
 
-    static string addedButtonClickEventNames = "";
+    /*
+    static void AddJS_ControlsIterator()
+    {
+        string returners = "";
+
+        foreach(Control control in controls.Values)
+        {
+            script += "variables.push('" + control.Name + "');" + newLineDouble();
+            returners += "if ( name == '" + control.Name + "') return " + control.Name + ";" + newLineDouble();
+        }
+        script += "function getVariable(name) {" + newLineDouble() + returners + Environment.NewLine + "}" + newLineDouble();
+
+        script += newLineDouble() + @"
+let Controls = {
+
+    [Symbol.iterator]: function() {
+        let index = 0;
+
+        let iterator = {
+
+            next: function() {
+
+                if (index < variables.length) {
+
+                    return { value: getVariable(variables[index++]), done: false };
+                } else {
+
+                    return { done: true };
+                }
+            }
+        };
+        return iterator;
+    }
+};
+" + newLineDouble();
+
+        usedNames += "Controls,";
+    }*/
+
+    static void DefineJS_Control(Control control, string classname)
+    {
+        script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
+        usedNames += control.Name + "," + newLineDouble();
+    }
+
+    static void LinkJS_Event(Control control, string eventName, EventHandler eventVoid)
+    {
+        string fullEventName = GetEventName(control, eventName);
+
+        if (!addedEventNames.Contains(fullEventName))
+        {
+            addedEventNames += fullEventName + ";";
+            EventInfo eventInfo = control.GetType().GetEvent(eventName);
+            if (eventInfo != null)
+            {
+                eventInfo.AddEventHandler(control, eventVoid);
+            }
+        }
+
+
+        if (fullEventName != null)
+        {
+            script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
+            eventEmittersJS += "if (data.includes(`" + fullEventName + "`))" + control.Name + "." + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+            usedNames += fullEventName.ToString() + "," + newLineDouble();
+        }
+    }
+
+    static string addedEventNames = "";
     static string addedTextboxTextChangedEventNames = "";
 
-    private static void Button_Click(object? sender, EventArgs e)
+
+    private static void Control_CheckedChanged(object? sender, EventArgs e)
     {
-        string eventName = GetEventName(sender as Control, "Click");
-
-        if (websocket == null || (websocket.State != WebSocketState.Open && websocket.State != WebSocketState.Connecting))
-        {
-            initializeWebsocket(socketPort);
-        }
-
-        websocket.Send( "eventEmitClick: " + eventName );
+        string eventName = GetEventName(sender as Control, "CheckedChanged");
+        ReconnectSocketOnDisconnect();
+        string eventArgs = ConvertPropertiesToJson(e);
+        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
+    }
+    private static void Control_ValueChanged(object? sender, EventArgs e)
+    {
+        string eventName = GetEventName(sender as Control, "ValueChanged");
+        ReconnectSocketOnDisconnect();
+        string eventArgs = ConvertPropertiesToJson(e);
+        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
     }
 
-    private static void TextBox_TextChanged(object? sender, EventArgs e)
+    private static void Control_Click(object? sender, EventArgs e)
     {
-        Control txtBox = sender as Control;
-        string eventName = GetEventName(txtBox, "TextChanged");
+        string eventName = GetEventName(sender as Control, "Click");
+        ReconnectSocketOnDisconnect();
+        string eventArgs = ConvertPropertiesToJson(e);
+        websocket.Send( "nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
+    }
 
+    static string ConvertPropertiesToJson(object obj)
+    {
+        StringBuilder jsonBuilder = new StringBuilder("{");
+        Type type = obj.GetType();
+        PropertyInfo[] properties = type.GetProperties();
+
+        bool commaNeeded = false;
+
+        foreach (var property in properties)
+        {
+            object value = property.GetValue(obj);
+
+            if (commaNeeded) jsonBuilder.Append(",");
+
+            jsonBuilder.AppendFormat("\"{0}\":", property.Name);
+
+            if (value != null && property.PropertyType.Namespace != "System")
+            {
+                jsonBuilder.Append(ConvertPropertiesToJson(value));
+            }
+            else
+            {
+                jsonBuilder.AppendFormat("\"{0}\"", value);
+            }
+
+            commaNeeded = true;
+        }
+
+        jsonBuilder.Append("}");
+
+        return jsonBuilder.ToString();
+    }
+
+    static void ReconnectSocketOnDisconnect()
+    {
         if (websocket == null || (websocket.State != WebSocketState.Open && websocket.State != WebSocketState.Connecting))
         {
             initializeWebsocket(socketPort);
         }
+    }
 
-        websocket.Send("eventEmitTextBoxTextChanged: " + eventName);
+
+
+    private static void Control_TextChanged(object? sender, EventArgs e)
+    {
+        string eventName = GetEventName(sender as Control, "TextChanged");
+        ReconnectSocketOnDisconnect();
+        string eventArgs = ConvertPropertiesToJson(e);
+        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
     }
 
     static string scriptWebsocket(int port)
@@ -228,27 +298,22 @@ wss.on(`connection`,  (ws, request)  => {
 
 clients.add(ws);
 
-console.log(`new client connected`);
+console.log(`form connected`);
         socket = ws;
         ws.send(`Welcome, you are connected!`);
         ws.on(`message`, data => {
 
-        //console.log(`Client has sent us: ${data}`);
-        if ( data.toString().includes(`eventEmitClick`) ){
+        //console.log(`form has sent us: ${data}`);
+        if ( data.toString().includes(`nwfEventEmit`) ){
 
-            {{eventsEmitClick}}
-
-        }
-
-        if ( data.toString().includes(`eventEmitTextBoxTextChanged`) ){
-
-            {{eventsEmitTextBoxTextChanged}}
+            {{eventEmittersJS}}
 
         }
+
 });
 
 ws.on(`close`, () => {
-    console.log(`the client has connected`);
+    console.log(`form has disconnected`);
 });
 
 ws.onerror = function()
@@ -446,6 +511,12 @@ return new Promise((resolve, reject) => {
                     {
                         convertedValue = Enum.Parse(property.PropertyType, propertyValue);
                     }
+                    else if (property.PropertyType.Name == "Decimal")
+                    {
+                        System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.InvariantCulture;
+                        decimal number = decimal.Parse(propertyValue.Replace(",", culture.NumberFormat.NumberDecimalSeparator), culture);
+                        convertedValue = number;
+                    }
                     else if(property.PropertyType.Name == "Point")
                     {
                         string splitted = message.Split("x:")[1];
@@ -466,6 +537,11 @@ return new Promise((resolve, reject) => {
                     else
                     {
                         convertedValue = Convert.ChangeType(propertyValue, property.PropertyType);
+                    }
+
+                    if(control is NumericUpDown)
+                    {
+                        if ((decimal)convertedValue > (control as NumericUpDown).Maximum) { convertedValue = (control as NumericUpDown).Maximum; }
                     }
 
                     control.Invoke((MethodInvoker)delegate

@@ -17,6 +17,8 @@ class Control {
         this.setTextCallback = setTextCallback;
 
         this.Properties = {};
+
+        this._eventHandlers = {};
     }
 
     async _SetProperty(property, value){
@@ -27,16 +29,29 @@ class Control {
 
     async _GetProperty(property){
         let value = null;
-
-        //if (this.formTextChanged) {
-        //this.Properties['Text'] = text;
-        //this.formTextChanged = false;
-        //}
-
         value = await this.getTextCallback(this.Name, property);
         this.Properties[property] = value; 
 
         return value;
+    }
+
+    _FireEvent(eventName, eventArgs) {
+        if (this._eventHandlers[eventName]) {
+            this._eventHandlers[eventName].forEach(handler => handler(eventArgs));
+        }
+    }
+
+    _AddEventHandler(eventName, handler) {
+        if (!this._eventHandlers[eventName]) {
+            this._eventHandlers[eventName] = [];
+        }
+        if( !this._eventHandlers[eventName].includes(handler)) this._eventHandlers[eventName].push(handler);
+    }
+
+    _RemoveEventHandler(eventName, handler) {
+        if (this._eventHandlers[eventName]) {
+            this._eventHandlers[eventName] = this._eventHandlers[eventName].filter(h => h !== handler);
+        }
     }
     
 
@@ -75,23 +90,39 @@ class Control {
     }
 }
 
-class TextBox extends Control {
+class ClickableControl extends Control{
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
+        this._clickHandlers = [];
+    }
+
+    OnClick(handler) {
+        super._AddEventHandler('Click', handler);
+    }
+
+    Click(eventArgs) {
+        super._FireEvent('Click', eventArgs);
+    }
+}
+
+class TextBox extends ClickableControl {
     constructor(name, text, getTextCallback, setTextCallback) {
 
         super(name, text, getTextCallback, setTextCallback);
 
         this.textWasChanged = true;
-        this._textChangedHandlers = [];
     }
 
     OnTextChanged(handler){
         this.textWasChanged = true;
-        if (!this._textChangedHandlers.includes(handler)) this._textChangedHandlers.push(handler);
+        super._AddEventHandler('TextChanged', handler);
     }
 
-    TextChanged(){
+    TextChanged(eventArgs){
         this.textWasChanged = true;
-        this._textChangedHandlers.forEach(handler => handler());
+        super._FireEvent('TextChanged', eventArgs);
     }
 
     async getText(){
@@ -129,22 +160,7 @@ class TextBox extends Control {
     }*/
 }
 
-class ClickableControl extends Control{
-    constructor(name, text, getTextCallback, setTextCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
-
-        this._clickHandlers = [];
-    }
-
-    OnClick(handler) {
-        if (!this._clickHandlers.includes(handler)) this._clickHandlers.push(handler);
-    }
-
-    Click() {
-        this._clickHandlers.forEach(handler => handler());
-    }
-}
 
 class Button extends ClickableControl {
     
@@ -168,7 +184,7 @@ class Label extends ClickableControl {
 class CheckableButton extends Button {
     constructor(name, text, getTextCallback, setTextCallback) {
         super(name, text, getTextCallback, setTextCallback);
-        //this.checked = false;
+
     }
 
     async setChecked(checked) {
@@ -193,6 +209,14 @@ class CheckableButton extends Button {
 
     async setAppearanceButton(){
         return await setAppearance(AppearanceCheckable.BUTTON);
+    }
+
+    OnCheckedChanged(handler){
+        super._AddEventHandler('CheckedChanged', handler);
+    }
+
+    CheckedChanged(eventArgs){
+        super._FireEvent('CheckedChanged', eventArgs);
     }
 
 }
@@ -222,7 +246,39 @@ class CheckBox extends CheckableButton {
 
 }
 
+class NumericUpDown extends ClickableControl {
 
+    constructor(name, text, getTextCallback, setTextCallback) {
+
+        super(name, text, getTextCallback, setTextCallback);
+
+    }
+
+    _parseNumberString(numberString) {
+        let withoutThousandsSeparators = numberString.replace(/\./g, '');
+        let parsedNumber = parseFloat(withoutThousandsSeparators.replace(',', '.'));
+        return parsedNumber;
+    }
+
+    async getValue(){
+        console.log(await super._GetProperty('Value'));
+        return this._parseNumberString( await super._GetProperty('Value') );
+    }
+
+    async setValue(value){
+        super._SetProperty('Value', value)
+    }
+
+    OnValueChanged(handler){
+        super._AddEventHandler('ValueChanged', handler);
+    }
+
+    ValueChanged(eventArgs){
+        super._FireEvent('ValueChanged', eventArgs);
+    }
+    
+    
+}
 
 module.exports = {
     TextBox,
@@ -230,6 +286,7 @@ module.exports = {
     Label,
     RadioButton,
     CheckBox,
+    NumericUpDown,
 
     AppearanceCheckable
 };
