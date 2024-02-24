@@ -1,2 +1,2 @@
 *.cs linguist-language=C#
-node-windows-forms/ linguist-detectable=false
+*.js linguist-vendored=false
