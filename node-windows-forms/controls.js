@@ -113,6 +113,7 @@ class TextBox extends ClickableControl {
         super(name, text, getTextCallback, setTextCallback);
 
         this.textWasChanged = true;
+        this.lastText = text;
     }
 
     OnTextChanged(handler){
@@ -131,6 +132,8 @@ class TextBox extends ClickableControl {
             this.textWasChanged = false;
             return this.lastText;
         }
+
+        
         
         return this.lastText;
     }
@@ -139,7 +142,7 @@ class TextBox extends ClickableControl {
         this.lastText = text;
         this.textWasChanged = false;
 
-        super.setText();
+        super.setText(text);
     }
 
     async setUseSystemPasswordChar(useSystemPasswordChar) {

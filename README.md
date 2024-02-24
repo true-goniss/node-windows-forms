@@ -12,6 +12,7 @@ TextBox
 Label
 RadioButton
 CheckBox
+NumericUpDown
 ```
 
 <br><br>
@@ -38,6 +39,17 @@ Install 'ws' library via npm. In your javascript code you can use Form controls 
 ```javascript
 const form = require('./node-windows-forms/form');
 
-form.button2.OnClick( async () => {
+form.button1.OnClick(async (eventArgs) => {
+
     form.textBox2.setText( await form.textBox1.getText() );
+
+    console.log(eventArgs);
+    
+});
+
+form.numericUpDown1.OnValueChanged(async () => {
+
+    const numberValue = await form.numericUpDown1.getValue();
+    form.textBox1.setText( numberValue.toString() );
+
 });
