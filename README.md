@@ -51,5 +51,7 @@ form.numericUpDown1.OnValueChanged(async () => {
 
     const numberValue = await form.numericUpDown1.getValue();
     form.textBox1.setText( numberValue.toString() );
+    
+    console.log(await form.textBox1.Focus());
 
 });
