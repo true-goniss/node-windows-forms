@@ -48,7 +48,7 @@ static class NodeControls
 
         foreach (Control control in controls.Values)
         {
-            if(control is Label)
+            if (control is Label)
             {
                 DefineJS_Control(control, "Label");
 
@@ -76,7 +76,7 @@ static class NodeControls
             {
                 DefineJS_Control(control, "TextBox");
 
-                
+
                 LinkJS_Event(control, "TextChanged", Control_TextChanged);
                 LinkJS_Event(control, "Click", Control_Click);
             }
@@ -86,7 +86,7 @@ static class NodeControls
                 DefineJS_Control(control, "NumericUpDown");
                 LinkJS_Event(control, "Click", Control_Click);
                 LinkJS_Event(control, "ValueChanged", Control_ValueChanged);
-                
+
             }
 
             if (control is Button)
@@ -120,13 +120,17 @@ static class NodeControls
                     WriteTextToFile(Path.Combine(outputPath, "form.js"), script, Encoding.UTF8);
                     accessSuccess = true;
                 }
-                catch(Exception ee2) { 
-                    tries++; await Task.Delay(1000); }
-            } 
+                catch (Exception ee2)
+                {
+                    tries++; await Task.Delay(1000);
+                }
+            }
             while (!accessSuccess && tries <= 5);
         }
-        catch(Exception ee) { 
-            MessageBox.Show("NodeControls: error while saving"); }
+        catch (Exception ee)
+        {
+            MessageBox.Show("NodeControls: error while saving");
+        }
 
         //if(accessSuccess) MessageBox.Show("NodeControls: nodejs script of controls saved"); 
     }
@@ -181,7 +185,7 @@ let Controls = {
 
     static void DefineJS_Control(Control control, string classname)
     {
-        script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }); " + newLineDouble();
+        script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }, async (name, methodName, value) => { return await invokeControlMethod(`" + control.Name + "`, methodName, value) }); " + newLineDouble();
         usedNames += control.Name + "," + newLineDouble();
     }
 
@@ -232,7 +236,7 @@ let Controls = {
         string eventName = GetEventName(sender as Control, "Click");
         ReconnectSocketOnDisconnect();
         string eventArgs = ConvertPropertiesToJson(e);
-        websocket.Send( "nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
+        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
     }
 
     static string ConvertPropertiesToJson(object obj)
@@ -357,6 +361,38 @@ return new Promise((resolve, reject) => {
 });
 }
 
+async function invokeControlMethod(name, methodName, value) {
+
+return new Promise((resolve, reject) => {
+
+
+    try {
+        clients.forEach((client) => {
+
+            client.send(`invokeControlMethod:` + name + `.` + methodName + `(` + value + `)`, (response) => {
+
+            });
+
+            client.once('message', (response) => {
+                resolve(response.toString());
+            });
+
+
+            const timeout = setTimeout(() => {
+                reject(new Error(`Timeout: No response received`));
+            }, 5000);
+
+            client.once('message', () => {
+                clearTimeout(timeout);
+            });
+        });
+
+    }
+    catch(ee){ reject(new Error('WebSocket connection is not open')); }
+
+});
+}
+
 async function setControlProperty(name, property, value){
     
 return new Promise((resolve, reject) => {
@@ -396,7 +432,7 @@ return new Promise((resolve, reject) => {
 
     private static void Websocket_Closed(object? sender, EventArgs e)
     {
-        if(reconnectTimer == null)
+        if (reconnectTimer == null)
         {
             reconnectTimer = new System.Timers.Timer(1000);
             reconnectTimer.Elapsed += ReconnectTimer_Elapsed;
@@ -414,7 +450,7 @@ return new Promise((resolve, reject) => {
         {
             websocket.Open();
         }
-        catch(Exception ex) { }
+        catch (Exception ex) { }
     }
 
     static DateTime lastMessageTime;
@@ -434,6 +470,32 @@ return new Promise((resolve, reject) => {
         {
 
             Console.WriteLine(message);
+
+            if (message.Contains("invokeControlMethod:"))
+            {
+                string str = message.Split("invokeControlMethod:")[1];
+                string controlName = str.Split('.')[0];
+                string methodName = str.Split('.')[1].Split("(")[0];
+                string value = str.Split('.')[1].Split('(')[1].Split(')')[0];
+
+                if (controls.TryGetValue(controlName, out Control control))
+                {
+                    Type controlType = control.GetType();
+
+                    MethodInfo methodInfo = controlType.GetMethod(methodName);
+
+                    if(value == "" || value == "null")
+                    {
+                        control.Invoke((MethodInvoker)delegate
+                        {
+                            object returnValue = methodInfo.Invoke(control, null);
+                            websocket.Send(returnValue.ToString());
+                        });
+
+                        //
+                    }
+                }
+            }
 
             if (message.Contains("getControlProperty:"))
             {
@@ -479,7 +541,7 @@ return new Promise((resolve, reject) => {
                             websocket.Send(propertyValue);
                         }
 
-                        
+
                     }
                     else
                     {
@@ -517,12 +579,12 @@ return new Promise((resolve, reject) => {
                         decimal number = decimal.Parse(propertyValue.Replace(",", culture.NumberFormat.NumberDecimalSeparator), culture);
                         convertedValue = number;
                     }
-                    else if(property.PropertyType.Name == "Point")
+                    else if (property.PropertyType.Name == "Point")
                     {
                         string splitted = message.Split("x:")[1];
                         string x = splitted.Split("y:")[0];
                         string y = splitted.Split("y:")[1];
-                        Point point = new Point(Convert.ToInt32( x ), Convert.ToInt32( y ));
+                        Point point = new Point(Convert.ToInt32(x), Convert.ToInt32(y));
                         convertedValue = point;
                     }
                     else if (propertyName == "Size")
@@ -537,11 +599,6 @@ return new Promise((resolve, reject) => {
                     else
                     {
                         convertedValue = Convert.ChangeType(propertyValue, property.PropertyType);
-                    }
-
-                    if(control is NumericUpDown)
-                    {
-                        if ((decimal)convertedValue > (control as NumericUpDown).Maximum) { convertedValue = (control as NumericUpDown).Maximum; }
                     }
 
                     control.Invoke((MethodInvoker)delegate
@@ -563,7 +620,8 @@ return new Promise((resolve, reject) => {
                 label10.Text = "buysocket rcv: " + DateTime.Now.ToString("HH:mm:ss") + " sessionId " + sessionId + " currency " + accountCurrency;
             }));*/
         }
-        catch (Exception ee) {
+        catch (Exception ee)
+        {
             string h = "";
         }
 
@@ -624,7 +682,7 @@ return new Promise((resolve, reject) => {
                 {
                     controlsWithTag.Add(childCtrl.Name, childCtrl);
                 }
-                catch(Exception ee) { }
+                catch (Exception ee) { }
             }
 
             controlsWithTag.Concat(TraverseSubControlsWithTag(childCtrl, tag));

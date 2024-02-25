@@ -9,13 +9,14 @@ by gon_iss (c) 2o24
 
 class Control {
 
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
         this.Name = name;
         this.Text = text || '';
 
         this.getTextCallback = getTextCallback;
         this.setTextCallback = setTextCallback;
-
+        this.invokeMethodCallback = invokeMethodCallback;
+        
         this.Properties = {};
 
         this._eventHandlers = {};
@@ -35,6 +36,13 @@ class Control {
         return value;
     }
 
+    async _InvokeMethod(methodName, value){
+        let result = null;
+        result = await this.invokeMethodCallback(this.Name, methodName, value);
+
+        return result;
+    }
+
     _FireEvent(eventName, eventArgs) {
         if (this._eventHandlers[eventName]) {
             this._eventHandlers[eventName].forEach(handler => handler(eventArgs));
@@ -52,6 +60,10 @@ class Control {
         if (this._eventHandlers[eventName]) {
             this._eventHandlers[eventName] = this._eventHandlers[eventName].filter(h => h !== handler);
         }
+    }
+
+    async Focus(){
+        return Boolean( await this._InvokeMethod('Focus', '') );
     }
 
     async getAllowDrop(){
@@ -237,9 +249,9 @@ class Control {
 }
 
 class ClickableControl extends Control{
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
         this._clickHandlers = [];
     }
@@ -254,9 +266,9 @@ class ClickableControl extends Control{
 }
 
 class TextBox extends ClickableControl {
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
         this.textWasChanged = true;
         this.lastText = text;
@@ -313,26 +325,26 @@ class TextBox extends ClickableControl {
 
 class Button extends ClickableControl {
     
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
     }
 
 }
 
 class Label extends ClickableControl {
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
     }
 
 }
 
 class CheckableButton extends Button {
-    constructor(name, text, getTextCallback, setTextCallback) {
-        super(name, text, getTextCallback, setTextCallback);
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
     }
 
@@ -377,9 +389,9 @@ const AppearanceCheckable = {
 
 class RadioButton extends CheckableButton {
 
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
     }
 
@@ -387,9 +399,9 @@ class RadioButton extends CheckableButton {
 
 class CheckBox extends CheckableButton {
 
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
     }
 
@@ -397,9 +409,9 @@ class CheckBox extends CheckableButton {
 
 class NumericUpDown extends ClickableControl {
 
-    constructor(name, text, getTextCallback, setTextCallback) {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
-        super(name, text, getTextCallback, setTextCallback);
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
     }
 
