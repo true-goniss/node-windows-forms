@@ -136,7 +136,7 @@ class Control {
 
     async setCapture(Capture){
         const value = Boolean( Capture );
-        await this._SetProperty('', value );
+        await this._SetProperty('Capture', value );
     }
 
     async getCausesValidation(){
@@ -146,7 +146,7 @@ class Control {
 
     async setCausesValidation(CausesValidation){
         const value = Boolean( CausesValidation );
-        await this._SetProperty('', value );
+        await this._SetProperty('CausesValidation', value );
     }
 
     async getContainsFocus(){
@@ -171,7 +171,7 @@ class Control {
 
     async setTabStop(TabStop){
         const value = Boolean( TabStop );
-        await this._SetProperty('', value );
+        await this._SetProperty('TabStop', value );
     }
 
     async getVisible() {
@@ -191,7 +191,7 @@ class Control {
 
     async setUseWaitCursor(UseWaitCursor){
         const value = Boolean( UseWaitCursor );
-        await this._SetProperty('', value );
+        await this._SetProperty('UseWaitCursor', value );
     }
 
     async getFocused(){
@@ -206,7 +206,7 @@ class Control {
 
     async setAutoSize(AutoSize){
         const value = Boolean( AutoSize );
-        await this._SetProperty('', value );
+        await this._SetProperty('AutoSize', value );
     }
 
     async getText() {
