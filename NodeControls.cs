@@ -478,13 +478,14 @@ return new Promise((resolve, reject) => {
                 string methodName = str.Split('.')[1].Split("(")[0];
                 string value = str.Split('.')[1].Split('(')[1].Split(')')[0];
 
+
+
                 if (controls.TryGetValue(controlName, out Control control))
                 {
                     Type controlType = control.GetType();
-
                     MethodInfo methodInfo = controlType.GetMethod(methodName);
 
-                    if(value == "" || value == "null")
+                    if (value == "" || value == "null")
                     {
                         control.Invoke((MethodInvoker)delegate
                         {
@@ -493,6 +494,14 @@ return new Promise((resolve, reject) => {
                         });
 
                         //
+                    }
+
+                    if(controlType.Name == "TextBox" && methodName == "AppendText")
+                    {
+                        control.Invoke((MethodInvoker)delegate
+                        {
+                            object returnValue = methodInfo.Invoke(control, new string[] { value });
+                        });
                     }
                 }
             }

@@ -36,6 +36,25 @@ class Control {
         return value;
     }
 
+    async _SetBooleanProperty(property, value){
+        const _value = Boolean( value );
+        await this._SetProperty(property, _value );
+    }
+
+    async _GetBooleanProperty(property){
+        const value = Boolean( await this._GetProperty( property ) );
+        return value;
+    }
+
+    async _GetSetBooleanProperty(property, value){
+        if(value !== null && value !== undefined) {
+            return await this._SetBooleanProperty(property, value);
+        }
+        else{
+            return await this._GetBooleanProperty(property);
+        }
+    }
+
     async _InvokeMethod(methodName, value){
         let result = null;
         result = await this.invokeMethodCallback(this.Name, methodName, value);
@@ -66,161 +85,6 @@ class Control {
         return Boolean( await this._InvokeMethod('Focus', '') );
     }
 
-    async getAllowDrop(){
-        const value = Boolean( await this._GetProperty('AllowDrop') );
-        return value;
-    }
-
-    async setAllowDrop(AllowDrop){
-        const value = Boolean( AllowDrop );
-        await this._SetProperty('AllowDrop', value );
-    }
-
-    async getHasChildren(){
-        const value = Boolean( await this._GetProperty('HasChildren') );
-        return value;
-    }
-
-    async getIsHandleCreated(){
-        const value = Boolean( await this._GetProperty('IsHandleCreated') );
-        return value;
-    }
-
-    async getInvokeRequired(){
-        const value = Boolean( await this._GetProperty('InvokeRequired') );
-        return value;
-    }
-    
-    async getIsAccessible(){
-        const value = Boolean( await this._GetProperty('IsAccessible') );
-        return value;
-    }
-
-    async setIsAccessible(IsAccessible){
-        const value = Boolean( IsAccessible );
-        await this._SetProperty('IsAccessible', value );
-    }
-
-    async getIsAncestorSiteInDesignMode(){
-        const value = Boolean( await this._GetProperty('IsAncestorSiteInDesignMode') );
-        return value;
-    }
-
-    async getIsMirrored(){
-        const value = Boolean( await this._GetProperty('IsMirrored') );
-        return value;
-    }
-
-    async getRecreatingHandle(){
-        const value = Boolean( await this._GetProperty('RecreatingHandle') );
-        return value;
-    }
-
-    async getEnabled(){
-        const value = Boolean( await this._GetProperty('Enabled') );
-        return value;
-    }
-
-    async setEnabled(enabled){
-        const value = Boolean( enabled );
-        await this._SetProperty('Enabled', value );
-    }
-
-    async getDisposing(){
-        const value = Boolean( await this._GetProperty('Disposing') );
-        return value;
-    }
-
-    async getCanFocus(){
-        const value = Boolean( await this._GetProperty('CanFocus') );
-        return value;
-    }
-
-    async getCanSelect(){
-        const value = Boolean( await this._GetProperty('CanSelect') );
-        return value;
-    }
-
-    async getCapture(){
-        const value = Boolean( await this._GetProperty('Capture') );
-        return value;
-    }
-
-    async setCapture(Capture){
-        const value = Boolean( Capture );
-        await this._SetProperty('Capture', value );
-    }
-
-    async getCausesValidation(){
-        const value = Boolean( await this._GetProperty('CausesValidation') );
-        return value;
-    }
-
-    async setCausesValidation(CausesValidation){
-        const value = Boolean( CausesValidation );
-        await this._SetProperty('CausesValidation', value );
-    }
-
-    async getContainsFocus(){
-        const value = Boolean( await this._GetProperty('ContainsFocus') );
-        return value;
-    }
-
-    async getCreated(){
-        const value = Boolean( await this._GetProperty('Created') );
-        return value;
-    }
-
-    async getIsDisposed(){
-        const value = Boolean( await this._GetProperty('IsDisposed') );
-        return value;
-    }
-
-    async getTabStop(){
-        const value = Boolean( await this._GetProperty('TabStop') );
-        return value;
-    }
-
-    async setTabStop(TabStop){
-        const value = Boolean( TabStop );
-        await this._SetProperty('TabStop', value );
-    }
-
-    async getVisible() {
-        const value = Boolean( await this._GetProperty('Visible') );
-        return value;
-    }
-
-    async setVisible(visible) {
-        const value = Boolean( visible );
-        return await this._SetProperty('Visible', value );
-    }
-
-    async getUseWaitCursor(){
-        const value = Boolean( await this._GetProperty('UseWaitCursor') );
-        return value;
-    }
-
-    async setUseWaitCursor(UseWaitCursor){
-        const value = Boolean( UseWaitCursor );
-        await this._SetProperty('UseWaitCursor', value );
-    }
-
-    async getFocused(){
-        const value = Boolean( await this._GetProperty('Focused') );
-        return value;
-    }
-
-    async getAutoSize(){
-        const value = Boolean( await this._GetProperty('AutoSize') );
-        return value;
-    }
-
-    async setAutoSize(AutoSize){
-        const value = Boolean( AutoSize );
-        await this._SetProperty('AutoSize', value );
-    }
-
     async getText() {
         return await this._GetProperty('Text');
     }
@@ -245,6 +109,132 @@ class Control {
     async getSize(){
         const size = JSON.parse( await this._GetProperty('Size') );
         return { width: Number( size.width ), height: Number( size.height ) } ;
+    }
+
+    // --------- Boolean { get; set; } properties --------- //     
+
+    async getAllowDrop(){
+        return await this._GetSetBooleanProperty('AllowDrop');
+    }
+
+    async setAllowDrop(AllowDrop){
+        return await this._GetSetBooleanProperty('AllowDrop', AllowDrop);
+    }
+
+    async getHasChildren(){
+        return await this._GetSetBooleanProperty('HasChildren');
+    }
+
+    async getIsHandleCreated(){
+        return await this._GetSetBooleanProperty('IsHandleCreated');
+    }
+
+    async getInvokeRequired(){
+        return await this._GetSetBooleanProperty('InvokeRequired');
+    }
+    
+    async getIsAccessible(){
+        return await this._GetSetBooleanProperty('IsAccessible');
+    }
+
+    async setIsAccessible(IsAccessible){
+        return await this._GetSetBooleanProperty('IsAccessible', IsAccessible);
+    }
+
+    async getIsAncestorSiteInDesignMode(){
+        return await this._GetSetBooleanProperty('IsAncestorSiteInDesignMode');
+    }
+
+    async getIsMirrored(){
+        return await this._GetSetBooleanProperty('IsMirrored');
+    }
+
+    async getRecreatingHandle(){
+        return await this._GetSetBooleanProperty('RecreatingHandle');
+    }
+
+    async getEnabled(){
+        return await this._GetSetBooleanProperty('Enabled');
+    }
+
+    async setEnabled(Enabled){
+        return await this._GetSetBooleanProperty('Enabled', Enabled);
+    }
+
+    async getDisposing(){
+        return await this._GetSetBooleanProperty('Disposing');
+    }
+
+    async getCanFocus(){
+        return await this._GetSetBooleanProperty('CanFocus');
+    }
+
+    async getCanSelect(){
+        return await this._GetSetBooleanProperty('CanSelect');
+    }
+
+    async getCapture(){
+        return await this._GetSetBooleanProperty('Capture');
+    }
+
+    async setCapture(Capture){
+        return await this._GetSetBooleanProperty('Capture', Capture);
+    }
+
+    async getCausesValidation(){
+        return await this._GetSetBooleanProperty('CausesValidation');
+    }
+
+    async setCausesValidation(CausesValidation){
+        return await this._GetSetBooleanProperty('CausesValidation', CausesValidation);
+    }
+
+    async getContainsFocus(){
+        return await this._GetSetBooleanProperty('ContainsFocus');
+    }
+
+    async getCreated(){
+        return await this._GetSetBooleanProperty('Created');
+    }
+
+    async getIsDisposed(){
+        return await this._GetSetBooleanProperty('IsDisposed');
+    }
+
+    async getTabStop(){
+        return await this._GetSetBooleanProperty('TabStop');
+    }
+
+    async setTabStop(TabStop){
+        return await this._GetSetBooleanProperty('TabStop', TabStop);
+    }
+
+    async getVisible() {
+        return await this._GetSetBooleanProperty('Visible');
+    }
+
+    async setVisible(Visible) {
+        return await this._GetSetBooleanProperty('Visible', Visible);
+    }
+
+    async getUseWaitCursor(){
+        return await this._GetSetBooleanProperty('UseWaitCursor');
+    }
+
+    async setUseWaitCursor(UseWaitCursor){
+        return await this._GetSetBooleanProperty('UseWaitCursor', UseWaitCursor);
+    }
+
+    async getFocused(){
+        return await this._GetSetBooleanProperty('Focused');
+    }
+
+    async getAutoSize(){
+        return await this._GetSetBooleanProperty('AutoSize');
+    }
+
+    async setAutoSize(AutoSize){
+        return await this._GetSetBooleanProperty('AutoSize', AutoSize);
     }
 }
 
@@ -274,6 +264,10 @@ class TextBox extends ClickableControl {
         this.lastText = text;
     }
 
+    AppendText(text){
+        super._InvokeMethod('AppendText', text.toString());
+    }
+
     OnTextChanged(handler){
         this.textWasChanged = true;
         super._AddEventHandler('TextChanged', handler);
@@ -301,24 +295,95 @@ class TextBox extends ClickableControl {
         super.setText(text);
     }
 
-    async setUseSystemPasswordChar(useSystemPasswordChar) {
-        const value = Boolean( useSystemPasswordChar );
-        return await this._SetProperty('UseSystemPasswordChar', value );
+    // --------- Boolean { get; set; } properties --------- // 
+
+    async getAcceptsTab(){
+        return await this._GetSetBooleanProperty('AcceptsTab');
+    }
+
+    async setAcceptsTab(AcceptsTab){
+        return await this._GetSetBooleanProperty('AcceptsTab', AcceptsTab);
+    }
+
+    async getCanUndo(){
+        return await this._GetSetBooleanProperty('CanUndo');
+    }
+
+    async getHideSelection(){
+        return await this._GetSetBooleanProperty('HideSelection');
+    }
+
+    async setHideSelection(HideSelection){
+        return await this._GetSetBooleanProperty('HideSelection', HideSelection);
+    }
+
+    async getModified(){
+        return await this._GetSetBooleanProperty('Modified');
+    }
+
+    async setModified(Modified){
+        return await this._GetSetBooleanProperty('Modified', Modified);
+    }
+
+    async getMultiline(){
+        return await this._GetSetBooleanProperty('Multiline');
+    }
+
+    async setMultiline(Multiline){
+        return await this._GetSetBooleanProperty('Multiline', Multiline);
+    }
+
+    async getShortcutsEnabled(){
+        return await this._GetSetBooleanProperty('ShortcutsEnabled');
+    }
+
+    async setShortcutsEnabled(ShortcutsEnabled){
+        return await this._GetSetBooleanProperty('ShortcutsEnabled', ShortcutsEnabled);
+    }
+
+    async getReadOnly(){
+        return await this._GetSetBooleanProperty('ReadOnly');
+    }
+
+    async setReadOnly(ReadOnly){
+        return await this._GetSetBooleanProperty('ReadOnly', ReadOnly);
+    }
+
+    async getWordWrap(){
+        return await this._GetSetBooleanProperty('WordWrap');
+    }
+
+    async setWordWrap(WordWrap){
+        return await this._GetSetBooleanProperty('WordWrap', WordWrap);
+    }
+
+    async getDoubleBuffered(){
+        return await this._GetSetBooleanProperty('DoubleBuffered');
+    }
+
+    async setDoubleBuffered(DoubleBuffered){
+        return await this._GetSetBooleanProperty('DoubleBuffered', DoubleBuffered);
+    }
+
+    async getCanEnableIme(){
+        return await this._GetSetBooleanProperty('CanEnableIme');
     }
 
     async getUsePasswordChar() {
-        const value = Boolean( await this._GetProperty('UseSystemPasswordChar') );
-        return value;
+        return await this._GetSetBooleanProperty('UsePasswordChar');
     }
 
-    /*
-    async setPasswordChar(passwordChar) {
-        return await this._SetProperty('PasswordChar', passwordChar );
+    async setUseSystemPasswordChar(UseSystemPasswordChar) {
+        return await this._GetSetBooleanProperty('UseSystemPasswordChar', UseSystemPasswordChar);
     }
 
-    async getPasswordChar() {
-        return await this._GetProperty('PasswordChar');
-    }*/
+    async getAcceptsReturn(){
+        return await this._GetSetBooleanProperty('AcceptsReturn');
+    }
+
+    async setAcceptsReturn(AcceptsReturn){
+        return await this._GetSetBooleanProperty('AcceptsReturn', AcceptsReturn);
+    }
 }
 
 
@@ -331,6 +396,47 @@ class Button extends ClickableControl {
 
     }
 
+    // --------- Boolean { get; set; } properties --------- //     
+
+    async getUseMnemonic(){
+        return await this._GetSetBooleanProperty('UseMnemonic');
+    }
+
+    async setUseMnemonic(UseMnemonic){
+        return await this._GetSetBooleanProperty('UseMnemonic', UseMnemonic);
+    }
+
+    async getUseCompatibleTextRendering(){
+        return await this._GetSetBooleanProperty('UseCompatibleTextRendering');
+    }
+
+    async setUseCompatibleTextRendering(UseCompatibleTextRendering){
+        return await this._GetSetBooleanProperty('UseCompatibleTextRendering', UseCompatibleTextRendering);
+    }
+
+    async getUseVisualStyleBackColor(){
+        return await this._GetSetBooleanProperty('UseVisualStyleBackColor');
+    }
+
+    async setUseVisualStyleBackColor(UseVisualStyleBackColor){
+        return await this._GetSetBooleanProperty('UseVisualStyleBackColor', UseVisualStyleBackColor);
+    }
+
+    async getAutoEllipsis(){
+        return await this._GetSetBooleanProperty('AutoEllipsis');
+    }
+
+    async setAutoEllipsis(AutoEllipsis){
+        return await this._GetSetBooleanProperty('AutoEllipsis', AutoEllipsis);
+    }
+
+    async getIsDefault(){
+        return await this._GetSetBooleanProperty('IsDefault');
+    }
+
+    async setIsDefault(IsDefault){
+        return await this._GetSetBooleanProperty('IsDefault', IsDefault);
+    }
 }
 
 class Label extends ClickableControl {
@@ -340,20 +446,45 @@ class Label extends ClickableControl {
 
     }
 
+    // --------- Boolean { get; set; } properties --------- // 
+
+    async getAutoEllipsis(){
+        return await this._GetSetBooleanProperty('AutoEllipsis');
+    }
+
+    async setAutoEllipsis(AutoEllipsis){
+        return await this._GetSetBooleanProperty('AutoEllipsis', AutoEllipsis);
+    }
+
+    async getUseMnemonic(){
+        return await this._GetSetBooleanProperty('UseMnemonic');
+    }
+
+    async setUseMnemonic(UseMnemonic){
+        return await this._GetSetBooleanProperty('UseMnemonic', UseMnemonic);
+    }
+
+    async getUseCompatibleTextRendering(){
+        return await this._GetSetBooleanProperty('UseCompatibleTextRendering');
+    }
+
+    async setUseCompatibleTextRendering(UseCompatibleTextRendering){
+        return await this._GetSetBooleanProperty('UseCompatibleTextRendering', UseCompatibleTextRendering);
+    }
+
+    async getRenderTransparent(){
+        return await this._GetSetBooleanProperty('RenderTransparent');
+    }
+
+    async setRenderTransparent(RenderTransparent){
+        return await this._GetSetBooleanProperty('RenderTransparent', RenderTransparent);
+    }
 }
 
 class CheckableButton extends Button {
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
         super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
 
-    }
-
-    async setChecked(checked) {
-        return await this._SetProperty('Checked', Boolean( checked ) );
-    }
-
-    async getChecked() {
-        return Boolean( await this._GetProperty('Checked') );
     }
 
     async setAppearance(appearance){
@@ -378,6 +509,24 @@ class CheckableButton extends Button {
 
     CheckedChanged(eventArgs){
         super._FireEvent('CheckedChanged', eventArgs);
+    }
+
+    // --------- Boolean { get; set; } properties --------- // 
+
+    async getChecked() {
+        return await this._GetSetBooleanProperty('Checked');
+    }
+
+    async setChecked(Checked) {
+        return await this._GetSetBooleanProperty('Checked', Checked);
+    }
+
+    async getAutoCheck(){
+        return await this._GetSetBooleanProperty('AutoCheck');
+    }
+
+    async setAutoCheck(AutoCheck){
+        return await this._GetSetBooleanProperty('AutoCheck', AutoCheck);
     }
 
 }
@@ -405,9 +554,73 @@ class CheckBox extends CheckableButton {
 
     }
 
+    // --------- Boolean { get; set; } properties --------- // 
+
+    async getThreeState(){
+        return await this._GetSetBooleanProperty('ThreeState');
+    }
+
+    async setThreeState(ThreeState){
+        return await this._GetSetBooleanProperty('ThreeState', ThreeState);
+    }
+
 }
 
-class NumericUpDown extends ClickableControl {
+class UpDownAbleControl extends ClickableControl {
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+    // --------- Boolean { get; set; } properties --------- // 
+
+    async getFocused(){
+        return await this._GetSetBooleanProperty('Focused');
+    }
+
+    async getInterceptArrowKeys(){
+        return await this._GetSetBooleanProperty('InterceptArrowKeys');
+    }
+
+    async setInterceptArrowKeys(InterceptArrowKeys){
+        return await this._GetSetBooleanProperty('InterceptArrowKeys', InterceptArrowKeys);
+    }
+
+    async getReadOnly(){
+        return await this._GetSetBooleanProperty('ReadOnly');
+    }
+
+    async setReadOnly(X){
+        return await this._GetSetBooleanProperty('ReadOnly', ReadOnly);
+    }
+
+    async getAutoScroll(){
+        return await this._GetSetBooleanProperty('AutoScroll');
+    }
+
+    async setAutoScroll(AutoScroll){
+        return await this._GetSetBooleanProperty('AutoScroll', AutoScroll);
+    }
+
+    async getChangingText(){
+        return await this._GetSetBooleanProperty('ChangingText');
+    }
+
+    async setChangingText(ChangingText){
+        return await this._GetSetBooleanProperty('ChangingText', ChangingText);
+    }
+
+    async getUserEdit(){
+        return await this._GetSetBooleanProperty('UserEdit');
+    }
+
+    async setUserEdit(UserEdit){
+        return await this._GetSetBooleanProperty('UserEdit', UserEdit);
+    }
+}
+
+class NumericUpDown extends UpDownAbleControl {
 
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
@@ -438,7 +651,23 @@ class NumericUpDown extends ClickableControl {
         super._FireEvent('ValueChanged', eventArgs);
     }
     
-    
+    // --------- Boolean { get; set; } properties --------- // 
+
+    async getThousandsSeparator(){
+        return await this._GetSetBooleanProperty('ThousandsSeparator');
+    }
+
+    async setThousandsSeparator(ThousandsSeparator){
+        return await this._GetSetBooleanProperty('ThousandsSeparator', ThousandsSeparator);
+    }
+
+    async getHexadecimal(){
+        return await this._GetSetBooleanProperty('Hexadecimal');
+    }
+
+    async setHexadecimal(Hexadecimal){
+        return await this._GetSetBooleanProperty('Hexadecimal', Hexadecimal);
+    }
 }
 
 function Boolean(value) {
