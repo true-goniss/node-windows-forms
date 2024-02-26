@@ -591,7 +591,7 @@ class UpDownAbleControl extends ClickableControl {
         return await this._GetSetBooleanProperty('ReadOnly');
     }
 
-    async setReadOnly(X){
+    async setReadOnly(ReadOnly){
         return await this._GetSetBooleanProperty('ReadOnly', ReadOnly);
     }
 
