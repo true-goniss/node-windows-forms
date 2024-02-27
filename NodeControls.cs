@@ -402,7 +402,7 @@ return new Promise((resolve, reject) => {
         clients.forEach((client) => {
 
             client.send(`setControlProperty:` + name + `.` + property + `:` + value, () => { });
-
+            resolve(true);
         });
 
     }

@@ -6,6 +6,7 @@ by gon_iss (c) 2o24
 
 'use strict';
 
+const { Point, Size } = require('./csharpTypes');
 
 class Control {
 
@@ -17,21 +18,22 @@ class Control {
         this.setTextCallback = setTextCallback;
         this.invokeMethodCallback = invokeMethodCallback;
         
-        this.Properties = {};
+        this._Properties = {};
 
         this._eventHandlers = {};
     }
 
     async _SetProperty(property, value){
 
-        this.Properties[property] = value; 
+        this._Properties[property] = value; 
         await this.setTextCallback(this.Name, property, value);
+        return true;
     }
 
     async _GetProperty(property){
         let value = null;
         value = await this.getTextCallback(this.Name, property);
-        this.Properties[property] = value; 
+        this._Properties[property] = value; 
 
         return value;
     }
@@ -94,21 +96,39 @@ class Control {
     }
 
     async setLocation(x, y){
-        return await this._SetProperty('Location', 'x:' + x.toString() + 'y:' + y.toString());
+        if(x instanceof Point){
+            const point = x;
+            return await this._SetProperty('Location', point.toString());
+        }
+        else{
+            const point = new Point(x, y);
+            return await this._SetProperty('Location', point.toString());
+        }
     }
 
     async getLocation(){
         const location = JSON.parse( await this._GetProperty('Location') );
-        return { x: Number( location.x ), y: Number( location.y ), isEmpty: Boolean( location.isEmpty ) } ;
+        const point = new Point( location.x, location.y );
+        point.isEmpty = Boolean( location.isEmpty );
+
+        return point;
     }
 
     async setSize(width, height){
-        return await this._SetProperty('Size', 'w:' + width.toString() + 'h:' + height.toString());
+        if(width instanceof Size){
+            const size = width;
+            return await this._SetProperty('Size', size.toString());
+        }
+        else{
+            const size = new Size(width, height); 
+            return await this._SetProperty('Size', size.toString());
+        }
     }
 
     async getSize(){
         const size = JSON.parse( await this._GetProperty('Size') );
-        return { width: Number( size.width ), height: Number( size.height ) } ;
+        console.log(size)
+        return new Size(size.width, size.height);
     }
 
     // --------- Boolean { get; set; } properties --------- //     
