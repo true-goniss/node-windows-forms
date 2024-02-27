@@ -544,6 +544,12 @@ return new Promise((resolve, reject) => {
                             propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
                             websocket.Send(propertyValue);
                         }
+                        else if (property.PropertyType.Name == "Color")
+                        {
+                            Color color = (Color)property.GetValue(control);
+                            propertyValue = "{ \"a\": " + color.A + ", \"r\": " + color.R + ", \"g\": " + color.G + ", \"b\": " + color.B + " }";
+                            websocket.Send(propertyValue);
+                        }
                         else
                         {
                             propertyValue = property.GetValue(control).ToString();
@@ -595,6 +601,16 @@ return new Promise((resolve, reject) => {
                         string y = splitted.Split("y:")[1];
                         Point point = new Point(Convert.ToInt32(x), Convert.ToInt32(y));
                         convertedValue = point;
+                    }
+                    else if (property.PropertyType.Name == "Color")
+                    {
+                        string splitted = message.Split("a:")[1];
+                        string a = splitted.Split("r:")[0];
+                        string r = splitted.Split("r:")[1].Split("g:")[0];
+                        string g = splitted.Split("g:")[1].Split("b:")[0];
+                        string b = splitted.Split("b:")[1];
+                        Color color = Color.FromArgb(Convert.ToInt32(a), Convert.ToInt32(r), Convert.ToInt32(g), Convert.ToInt32(b));
+                        convertedValue = color;
                     }
                     else if (propertyName == "Size")
                     {

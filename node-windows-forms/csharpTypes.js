@@ -32,7 +32,48 @@ class Size {
     }
 }
 
+class Color {
+
+    constructor(alpha, red, green, blue){
+        this._correctAndSetColors(alpha, red, green, blue);
+    }
+
+    FromArgb(alpha, red, green, blue){
+        this._correctAndSetColors(alpha, red, green, blue);
+    }
+
+    _correctAndSetColors(alpha, red, green, blue){
+        this.alpha = this._correctColorValue(alpha);
+        this.red = this._correctColorValue(red);
+        this.green = this._correctColorValue(green);
+        this.blue = this._correctColorValue(blue);
+
+        this.alpha = alpha;
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
+    }
+
+    _correctColorValue(val){
+        if(val < 0 || val > 255){
+            return 255;
+        }
+
+        return val;
+    }
+
+    toString(){
+        this.alpha = this._correctColorValue(this.alpha);
+        this.red = this._correctColorValue(this.red);
+        this.green = this._correctColorValue(this.green);
+        this.blue = this._correctColorValue(this.blue);
+
+        return 'a:' + this.alpha.toString() + 'r:' + this.red.toString()+ 'g:' + this.green.toString() + 'b:' + this.blue.toString();
+    }
+}
+
 module.exports = {
     Point,
-    Size
+    Size,
+    Color
 }

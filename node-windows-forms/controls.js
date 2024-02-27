@@ -6,7 +6,7 @@ by gon_iss (c) 2o24
 
 'use strict';
 
-const { Point, Size } = require('./csharpTypes');
+const { Point, Size, Color } = require('./csharpTypes');
 
 class Control {
 
@@ -57,6 +57,20 @@ class Control {
         }
     }
 
+    async _GetColorProperty(property){
+        const color = JSON.parse( await this._GetProperty( property ) );
+        return new Color(color.a, color.r, color.g, color.b);
+    }
+
+    async _SetColorProperty(property, a, r, g, b){
+        if(a instanceof Color){
+            return await this._SetProperty( property, a.toString() );
+        }
+        else{
+            return await this._SetProperty( property, new Color(a, r, g, b).toString() );
+        }
+    }
+
     async _InvokeMethod(methodName, value){
         let result = null;
         result = await this.invokeMethodCallback(this.Name, methodName, value);
@@ -93,6 +107,22 @@ class Control {
 
     async setText(text) {
         return await this._SetProperty('Text', text);
+    }
+
+    async setBackColor(a, r, g, b){
+        return await this._SetColorProperty('BackColor', a, r, g, b);
+    }
+
+    async getBackColor(){
+        return await this._GetColorProperty('BackColor');
+    }
+
+    async setForeColor(a, r, g, b){
+        return await this._SetColorProperty('ForeColor', a, r, g, b);
+    }
+
+    async getForeColor(){
+        return await this._GetColorProperty('ForeColor');
     }
 
     async setLocation(x, y){
