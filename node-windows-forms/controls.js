@@ -720,6 +720,16 @@ class NumericUpDown extends UpDownAbleControl {
     }
 }
 
+class Form extends ClickableControl{
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+}
+
 function Boolean(value) {
     if (typeof value === 'boolean') {
         return value;
@@ -737,6 +747,7 @@ module.exports = {
     RadioButton,
     CheckBox,
     NumericUpDown,
-
+    Form,
+    
     AppearanceCheckable
 };

@@ -51,7 +51,20 @@ form.numericUpDown1.OnValueChanged(async () => {
 
     const numberValue = await form.numericUpDown1.getValue();
     form.textBox1.setText( numberValue.toString() );
-    
+
     console.log(await form.textBox1.Focus());
 
 });
+
+form.Form1.OnClick(async () => {
+
+    const r = getRandomNumber(50, 255);
+    const g = getRandomNumber(50, 255);
+    const b = getRandomNumber(50, 255);
+
+    form.Form1.setBackColor(255, r, g, b );
+    form.Form1.setText(`form color ${r} ${g} ${b}`);
+
+});
+
+function getRandomNumber(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }

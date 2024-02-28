@@ -43,11 +43,16 @@ static class NodeControls
 
         script += scriptWebsocket(socketPort) + newLineDouble();
 
-        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown } = require(`./controls`);" + newLineDouble();
-        script += "let variables = [];";
+        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, Form } = require(`./controls`);" + newLineDouble();
+        script += "let variables = [];" + Environment.NewLine;
+
+        DefineJS_Control(form as Control, "Form");
+        LinkJS_Event(form as Control, "Click", Control_Click);
+        controls.Add(form.Name, form);
 
         foreach (Control control in controls.Values)
         {
+
             if (control is Label)
             {
                 DefineJS_Control(control, "Label");
