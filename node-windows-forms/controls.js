@@ -23,6 +23,307 @@ class Control {
         this._eventHandlers = {};
     }
 
+    OnClick(handler) {
+        this._AddEventHandler('Click', handler);
+    }
+    Click(eventArgs) {
+        this._FireEvent('Click', eventArgs);
+    }
+    OnInvalidated(handler) {
+        this._AddEventHandler('Invalidated', handler);
+    }
+    Invalidated(eventArgs) {
+        this._FireEvent('Invalidated', eventArgs);
+    }
+    OnKeyDown(handler) {
+        this._AddEventHandler('KeyDown', handler);
+    }
+    KeyDown(eventArgs) {
+        this._FireEvent('KeyDown', eventArgs);
+    }
+    OnKeyPress(handler) {
+        this._AddEventHandler('KeyPress', handler);
+    }
+    KeyPress(eventArgs) {
+        this._FireEvent('KeyPress', eventArgs);
+    }
+    OnKeyUp(handler) {
+        this._AddEventHandler('KeyUp', handler);
+    }
+    KeyUp(eventArgs) {
+        this._FireEvent('KeyUp', eventArgs);
+    }
+    OnLayout(handler) {
+        this._AddEventHandler('Layout', handler);
+    }
+    Layout(eventArgs) {
+        this._FireEvent('Layout', eventArgs);
+    }
+    OnLeave(handler) {
+        this._AddEventHandler('Leave', handler);
+    }
+    Leave(eventArgs) {
+        this._FireEvent('Leave', eventArgs);
+    }
+    OnLocationChanged(handler) {
+        this._AddEventHandler('LocationChanged', handler);
+    }
+    LocationChanged(eventArgs) {
+        this._FireEvent('LocationChanged', eventArgs);
+    }
+    OnLostFocus(handler) {
+        this._AddEventHandler('LostFocus', handler);
+    }
+    LostFocus(eventArgs) {
+        this._FireEvent('LostFocus', eventArgs);
+    }
+    OnMarginChanged(handler) {
+        this._AddEventHandler('MarginChanged', handler);
+    }
+    MarginChanged(eventArgs) {
+        this._FireEvent('MarginChanged', eventArgs);
+    }
+    OnMouseCaptureChanged(handler) {
+        this._AddEventHandler('MouseCaptureChanged', handler);
+    }
+    MouseCaptureChanged(eventArgs) {
+        this._FireEvent('MouseCaptureChanged', eventArgs);
+    }
+    OnMouseClick(handler) {
+        this._AddEventHandler('MouseClick', handler);
+    }
+    MouseClick(eventArgs) {
+        this._FireEvent('MouseClick', eventArgs);
+    }
+    OnMouseDoubleClick(handler) {
+        this._AddEventHandler('MouseDoubleClick', handler);
+    }
+    MouseDoubleClick(eventArgs) {
+        this._FireEvent('MouseDoubleClick', eventArgs);
+    }
+    OnMouseDown(handler) {
+        this._AddEventHandler('MouseDown', handler);
+    }
+    MouseDown(eventArgs) {
+        this._FireEvent('MouseDown', eventArgs);
+    }
+    OnMouseEnter(handler) {
+        this._AddEventHandler('MouseEnter', handler);
+    }
+    MouseEnter(eventArgs) {
+        this._FireEvent('MouseEnter', eventArgs);
+    }
+    OnMouseHover(handler) {
+        this._AddEventHandler('MouseHover', handler);
+    }
+    MouseHover(eventArgs) {
+        this._FireEvent('MouseHover', eventArgs);
+    }
+    OnMouseLeave(handler) {
+        this._AddEventHandler('MouseLeave', handler);
+    }
+    MouseLeave(eventArgs) {
+        this._FireEvent('MouseLeave', eventArgs);
+    }
+    OnMouseMove(handler) {
+        this._AddEventHandler('MouseMove', handler);
+    }
+    MouseMove(eventArgs) {
+        this._FireEvent('MouseMove', eventArgs);
+    }
+    OnMouseUp(handler) {
+        this._AddEventHandler('MouseUp', handler);
+    }
+    MouseUp(eventArgs) {
+        this._FireEvent('MouseUp', eventArgs);
+    }
+    OnMouseWheel(handler) {
+        this._AddEventHandler('MouseWheel', handler);
+    }
+    MouseWheel(eventArgs) {
+        this._FireEvent('MouseWheel', eventArgs);
+    }
+    OnMove(handler) {
+        this._AddEventHandler('Move', handler);
+    }
+    Move(eventArgs) {
+        this._FireEvent('Move', eventArgs);
+    }
+    OnPaddingChanged(handler) {
+        this._AddEventHandler('PaddingChanged', handler);
+    }
+    PaddingChanged(eventArgs) {
+        this._FireEvent('PaddingChanged', eventArgs);
+    }
+    OnPaint(handler) {
+        this._AddEventHandler('Paint', handler);
+    }
+    Paint(eventArgs) {
+        this._FireEvent('Paint', eventArgs);
+    }
+    OnPaintBackground(handler) {
+        this._AddEventHandler('PaintBackground', handler);
+    }
+    PaintBackground(eventArgs) {
+        this._FireEvent('PaintBackground', eventArgs);
+    }
+    OnParentBackColorChanged(handler) {
+        this._AddEventHandler('ParentBackColorChanged', handler);
+    }
+    ParentBackColorChanged(eventArgs) {
+        this._FireEvent('ParentBackColorChanged', eventArgs);
+    }
+    OnParentBackgroundImageChanged(handler) {
+        this._AddEventHandler('ParentBackgroundImageChanged', handler);
+    }
+    ParentBackgroundImageChanged(eventArgs) {
+        this._FireEvent('ParentBackgroundImageChanged', eventArgs);
+    }
+    OnParentBindingContextChanged(handler) {
+        this._AddEventHandler('ParentBindingContextChanged', handler);
+    }
+    ParentBindingContextChanged(eventArgs) {
+        this._FireEvent('ParentBindingContextChanged', eventArgs);
+    }
+    OnParentChanged(handler) {
+        this._AddEventHandler('ParentChanged', handler);
+    }
+    ParentChanged(eventArgs) {
+        this._FireEvent('ParentChanged', eventArgs);
+    }
+    OnParentCursorChanged(handler) {
+        this._AddEventHandler('ParentCursorChanged', handler);
+    }
+    ParentCursorChanged(eventArgs) {
+        this._FireEvent('ParentCursorChanged', eventArgs);
+    }
+    OnParentEnabledChanged(handler) {
+        this._AddEventHandler('ParentEnabledChanged', handler);
+    }
+    ParentEnabledChanged(eventArgs) {
+        this._FireEvent('ParentEnabledChanged', eventArgs);
+    }
+    OnParentFontChanged(handler) {
+        this._AddEventHandler('ParentFontChanged', handler);
+    }
+    ParentFontChanged(eventArgs) {
+        this._FireEvent('ParentFontChanged', eventArgs);
+    }
+    OnParentForeColorChanged(handler) {
+        this._AddEventHandler('ParentForeColorChanged', handler);
+    }
+    ParentForeColorChanged(eventArgs) {
+        this._FireEvent('ParentForeColorChanged', eventArgs);
+    }
+    OnParentRightToLeftChanged(handler) {
+        this._AddEventHandler('ParentRightToLeftChanged', handler);
+    }
+    ParentRightToLeftChanged(eventArgs) {
+        this._FireEvent('ParentRightToLeftChanged', eventArgs);
+    }
+    OnParentVisibleChanged(handler) {
+        this._AddEventHandler('ParentVisibleChanged', handler);
+    }
+    ParentVisibleChanged(eventArgs) {
+        this._FireEvent('ParentVisibleChanged', eventArgs);
+    }
+    OnPreviewKeyDown(handler) {
+        this._AddEventHandler('PreviewKeyDown', handler);
+    }
+    PreviewKeyDown(eventArgs) {
+        this._FireEvent('PreviewKeyDown', eventArgs);
+    }
+    OnPrint(handler) {
+        this._AddEventHandler('Print', handler);
+    }
+    Print(eventArgs) {
+        this._FireEvent('Print', eventArgs);
+    }
+    OnQueryContinueDrag(handler) {
+        this._AddEventHandler('QueryContinueDrag', handler);
+    }
+    QueryContinueDrag(eventArgs) {
+        this._FireEvent('QueryContinueDrag', eventArgs);
+    }
+    OnRegionChanged(handler) {
+        this._AddEventHandler('RegionChanged', handler);
+    }
+    RegionChanged(eventArgs) {
+        this._FireEvent('RegionChanged', eventArgs);
+    }
+    OnResize(handler) {
+        this._AddEventHandler('Resize', handler);
+    }
+    Resize(eventArgs) {
+        this._FireEvent('Resize', eventArgs);
+    }
+    OnRightToLeftChanged(handler) {
+        this._AddEventHandler('RightToLeftChanged', handler);
+    }
+    RightToLeftChanged(eventArgs) {
+        this._FireEvent('RightToLeftChanged', eventArgs);
+    }
+    OnSizeChanged(handler) {
+        this._AddEventHandler('SizeChanged', handler);
+    }
+    SizeChanged(eventArgs) {
+        this._FireEvent('SizeChanged', eventArgs);
+    }
+    OnStyleChanged(handler) {
+        this._AddEventHandler('StyleChanged', handler);
+    }
+    StyleChanged(eventArgs) {
+        this._FireEvent('StyleChanged', eventArgs);
+    }
+    OnSystemColorsChanged(handler) {
+        this._AddEventHandler('SystemColorsChanged', handler);
+    }
+    SystemColorsChanged(eventArgs) {
+        this._FireEvent('SystemColorsChanged', eventArgs);
+    }
+    OnTabIndexChanged(handler) {
+        this._AddEventHandler('TabIndexChanged', handler);
+    }
+    TabIndexChanged(eventArgs) {
+        this._FireEvent('TabIndexChanged', eventArgs);
+    }
+    OnTabStopChanged(handler) {
+        this._AddEventHandler('TabStopChanged', handler);
+    }
+    TabStopChanged(eventArgs) {
+        this._FireEvent('TabStopChanged', eventArgs);
+    }
+    OnTextChanged(handler) {
+        this._AddEventHandler('TextChanged', handler);
+    }
+    TextChanged(eventArgs) {
+        this._FireEvent('TextChanged', eventArgs);
+    }
+    OnValidated(handler) {
+        this._AddEventHandler('Validated', handler);
+    }
+    Validated(eventArgs) {
+        this._FireEvent('Validated', eventArgs);
+    }
+    OnValidating(handler) {
+        this._AddEventHandler('Validating', handler);
+    }
+    Validating(eventArgs) {
+        this._FireEvent('Validating', eventArgs);
+    }
+    OnVisibleChanged(handler) {
+        this._AddEventHandler('VisibleChanged', handler);
+    }
+    VisibleChanged(eventArgs) {
+        this._FireEvent('VisibleChanged', eventArgs);
+    }
+    OnGotFocus(handler) {
+        this._AddEventHandler('GotFocus', handler);
+    }
+    GotFocus(eventArgs) {
+        this._FireEvent('GotFocus', eventArgs);
+    }
+
     async _SetProperty(property, value){
 
         this._Properties[property] = value; 
@@ -157,7 +458,6 @@ class Control {
 
     async getSize(){
         const size = JSON.parse( await this._GetProperty('Size') );
-        console.log(size)
         return new Size(size.width, size.height);
     }
 
@@ -685,7 +985,6 @@ class NumericUpDown extends UpDownAbleControl {
     }
 
     async getValue(){
-        console.log(await super._GetProperty('Value'));
         return this._parseNumberString( await super._GetProperty('Value') );
     }
 
