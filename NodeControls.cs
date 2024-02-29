@@ -47,17 +47,20 @@ static class NodeControls
         script += "let variables = [];" + Environment.NewLine;
 
         DefineJS_Control(form as Control, "Form");
-        LinkJS_Event(form as Control, "Click", Control_Click);
+        //LinkJS_Event(form as Control, "Click");
+        
         controls.Add(form.Name, form);
 
         foreach (Control control in controls.Values)
         {
+            if (control is PictureBox)
+            {
+                continue;
+            }
 
             if (control is Label)
             {
                 DefineJS_Control(control, "Label");
-
-                LinkJS_Event(control, "Click", Control_Click);
             }
 
             if (control is CheckBox)
@@ -65,40 +68,34 @@ static class NodeControls
 
                 DefineJS_Control(control, "CheckBox");
 
-                LinkJS_Event(control, "Click", Control_Click);
-                LinkJS_Event(control, "CheckedChanged", Control_CheckedChanged);
+                LinkJS_Event(control, "CheckedChanged");
             }
 
             if (control is RadioButton)
             {
                 DefineJS_Control(control, "RadioButton");
 
-                LinkJS_Event(control, "Click", Control_Click);
-                LinkJS_Event(control, "CheckedChanged", Control_CheckedChanged);
+                LinkJS_Event(control, "CheckedChanged");
             }
 
             if (control is TextBox)
             {
                 DefineJS_Control(control, "TextBox");
-
-
-                LinkJS_Event(control, "TextChanged", Control_TextChanged);
-                LinkJS_Event(control, "Click", Control_Click);
             }
 
             if (control is NumericUpDown)
             {
                 DefineJS_Control(control, "NumericUpDown");
-                LinkJS_Event(control, "Click", Control_Click);
-                LinkJS_Event(control, "ValueChanged", Control_ValueChanged);
 
+                LinkJS_Event(control, "ValueChanged");
             }
 
             if (control is Button)
             {
                 DefineJS_Control(control, "Button");
-                LinkJS_Event(control, "Click", Control_Click);
             }
+
+            LinkControlJSCommonEvents(control);
         }
 
         //AddJS_ControlsIterator();
@@ -138,6 +135,80 @@ static class NodeControls
         }
 
         //if(accessSuccess) MessageBox.Show("NodeControls: nodejs script of controls saved"); 
+    }
+
+    static string[] commonEventNames = {
+        "Click",
+        "Invalidated",
+        "KeyDown",
+        "KeyPress",
+        "KeyUp",
+        "Layout",
+        "Leave",
+        "LocationChanged",
+        "LostFocus",
+        "MarginChanged",
+        "MouseCaptureChanged",
+        "MouseClick",
+        "MouseDoubleClick",
+        "MouseDown",
+        "MouseEnter",
+        "MouseHover",
+        "MouseLeave",
+        "MouseMove",
+        "MouseUp",
+        "MouseWheel",
+        "Move",
+        // "OnNotifyMessage" is not added
+        "PaddingChanged",
+        "Paint",
+        "PaintBackground",
+        "ParentBackColorChanged",
+        "ParentBackgroundImageChanged",
+        "ParentBindingContextChanged",
+        "ParentChanged",
+        "ParentCursorChanged",
+        "ParentEnabledChanged",
+        "ParentFontChanged",
+        "ParentForeColorChanged",
+        "ParentRightToLeftChanged",
+        "ParentVisibleChanged",
+        "PreviewKeyDown",
+        "Print",
+        "QueryContinueDrag",
+        "RegionChanged",
+        "Resize",
+        "RightToLeftChanged",
+        "SizeChanged",
+        "StyleChanged",
+        "SystemColorsChanged",
+        "TabIndexChanged",
+        "TabStopChanged",
+        "TextChanged",
+        "Validated",
+        "Validating",
+        "VisibleChanged",
+        "GotFocus"
+    };
+
+    public static void LinkControlJSCommonEvents(Control control)
+    {
+        string generatedJsControlClassEvents = ""; // i use this string to generate event names and then paste them into controls class manually
+
+        foreach (var eventName in commonEventNames)
+        {
+            LinkJS_Event(control, eventName);
+
+            generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
+                this._AddEventHandler('" + eventName + @"', handler);
+            }
+
+            " + eventName + @"(eventArgs){
+                this._FireEvent('" + eventName + @"', eventArgs);
+            }" + newLineDouble();
+        }
+
+        string h = generatedJsControlClassEvents;
     }
 
     public static int FindFreePort()
@@ -194,7 +265,28 @@ let Controls = {
         usedNames += control.Name + "," + newLineDouble();
     }
 
-    static void LinkJS_Event(Control control, string eventName, EventHandler eventVoid)
+    static void LinkJS_Event(Control control, string eventName)
+    {
+        try
+        {
+            string fullEventName = GetEventName(control, eventName);
+
+            CreateAndAttachDynamicEventHandler(control, eventName);
+
+            if (fullEventName != null)
+            {
+                script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
+                eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Name + "." + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+                usedNames += fullEventName.ToString() + "," + newLineDouble();
+            }
+        }
+        catch(Exception addingEx) { }
+    }
+
+    static string addedEventNames = "";
+    static string addedTextboxTextChangedEventNames = "";
+
+    private static void CreateAndAttachDynamicEventHandler(Control control, string eventName)
     {
         string fullEventName = GetEventName(control, eventName);
 
@@ -204,44 +296,26 @@ let Controls = {
             EventInfo eventInfo = control.GetType().GetEvent(eventName);
             if (eventInfo != null)
             {
-                eventInfo.AddEventHandler(control, eventVoid);
+                if (eventName == "KeyDown")
+                {
+                    string h = "";
+                }
+
+                eventInfo.AddEventHandler(control, DynamicEventHandler(eventName));
             }
         }
+    }
 
-
-        if (fullEventName != null)
+    static EventHandler DynamicEventHandler(string eventName)
+    {
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
+        return delegate (object sender, EventArgs e)
         {
-            script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
-            eventEmittersJS += "if (data.includes(`" + fullEventName + "`))" + control.Name + "." + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
-            usedNames += fullEventName.ToString() + "," + newLineDouble();
-        }
-    }
-
-    static string addedEventNames = "";
-    static string addedTextboxTextChangedEventNames = "";
-
-
-    private static void Control_CheckedChanged(object? sender, EventArgs e)
-    {
-        string eventName = GetEventName(sender as Control, "CheckedChanged");
-        ReconnectSocketOnDisconnect();
-        string eventArgs = ConvertPropertiesToJson(e);
-        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
-    }
-    private static void Control_ValueChanged(object? sender, EventArgs e)
-    {
-        string eventName = GetEventName(sender as Control, "ValueChanged");
-        ReconnectSocketOnDisconnect();
-        string eventArgs = ConvertPropertiesToJson(e);
-        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
-    }
-
-    private static void Control_Click(object? sender, EventArgs e)
-    {
-        string eventName = GetEventName(sender as Control, "Click");
-        ReconnectSocketOnDisconnect();
-        string eventArgs = ConvertPropertiesToJson(e);
-        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
+            ReconnectSocketOnDisconnect();
+            string eventArgs = ConvertPropertiesToJson(e);
+            websocket.Send("nwfEventEmit: " + (sender as Control).Name + "_" + eventName + "nwfEventArgs:" + eventArgs);
+        };
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
     }
 
     static string ConvertPropertiesToJson(object obj)
@@ -338,6 +412,7 @@ async function getControlProperty(name, property, value) {
 
 return new Promise((resolve, reject) => {
 
+    let responseReceived = false; 
 
     try {
         clients.forEach((client) => {
@@ -346,8 +421,16 @@ return new Promise((resolve, reject) => {
 
             });
 
-            client.once('message', (response) => {
-                resolve(response.toString());
+            client.on('message', (response) => {
+                if (responseReceived) return;
+
+                const responseStr = response.toString();
+
+                if( responseStr.includes(property) && responseStr.includes(name) ){ 
+                    responseReceived = true;
+                    clearTimeout(timeout);
+                    resolve(responseStr.split('nwfPropertyValue:')[1]);
+                }
             });
 
 
@@ -355,9 +438,6 @@ return new Promise((resolve, reject) => {
                 reject(new Error(`Timeout: No response received`));
             }, 5000);
 
-            client.once('message', () => {
-                clearTimeout(timeout);
-            });
         });
 
     }
@@ -535,30 +615,30 @@ return new Promise((resolve, reject) => {
                             }
 
                             propertyValue = enumValue.ToString();
-                            websocket.Send(propertyValue);
+                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
                         else if (propertyName == "Size")
                         {
                             Size size = (Size)property.GetValue(control);
                             propertyValue = "{ \"width\": " + size.Width + ", \"height\": " + size.Height + " }";
-                            websocket.Send(propertyValue);
+                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
                         else if (property.PropertyType.Name == "Point")
                         {
                             Point point = (Point)property.GetValue(control);
                             propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
-                            websocket.Send(propertyValue);
+                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
                         else if (property.PropertyType.Name == "Color")
                         {
                             Color color = (Color)property.GetValue(control);
                             propertyValue = "{ \"a\": " + color.A + ", \"r\": " + color.R + ", \"g\": " + color.G + ", \"b\": " + color.B + " }";
-                            websocket.Send(propertyValue);
+                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
                         else
                         {
                             propertyValue = property.GetValue(control).ToString();
-                            websocket.Send(propertyValue);
+                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
 
 
