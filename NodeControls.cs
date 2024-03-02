@@ -4,12 +4,9 @@
 
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using WebSocket4Net;
 
 
@@ -47,8 +44,7 @@ static class NodeControls
         script += "let variables = [];" + Environment.NewLine;
 
         DefineJS_Control(form as Control, "Form");
-        //LinkJS_Event(form as Control, "Click");
-        
+
         controls.Add(form.Name, form);
 
         foreach (Control control in controls.Values)
@@ -58,7 +54,7 @@ static class NodeControls
                 continue;
             }
 
-            if (control is Label)
+            if (control is System.Windows.Forms.Label)
             {
                 DefineJS_Control(control, "Label");
             }
@@ -135,6 +131,9 @@ static class NodeControls
         }
 
         //if(accessSuccess) MessageBox.Show("NodeControls: nodejs script of controls saved"); 
+
+        //CsharpEventHandlers.delegatesRunnerGenerated
+        //CsharpEventHandlers.delegatesGenerated
     }
 
     static string[] commonEventNames = {
@@ -193,7 +192,7 @@ static class NodeControls
 
     public static void LinkControlJSCommonEvents(Control control)
     {
-        string generatedJsControlClassEvents = ""; // i use this string to generate event names and then paste them into controls class manually
+        string generatedJsControlClassEvents = ""; // i use this string to generate JS event names and then paste them into controls class manually
 
         foreach (var eventName in commonEventNames)
         {
@@ -208,7 +207,6 @@ static class NodeControls
             }" + newLineDouble();
         }
 
-        string h = generatedJsControlClassEvents;
     }
 
     public static int FindFreePort()
@@ -269,9 +267,9 @@ let Controls = {
     {
         try
         {
-            string fullEventName = GetEventName(control, eventName);
+            string fullEventName = CsharpEventHandlers.GetEventName(control, eventName);
 
-            CreateAndAttachDynamicEventHandler(control, eventName);
+            CsharpEventHandlers.CreateAndAttachDynamicEventHandler(control, eventName);
 
             if (fullEventName != null)
             {
@@ -280,93 +278,16 @@ let Controls = {
                 usedNames += fullEventName.ToString() + "," + newLineDouble();
             }
         }
-        catch(Exception addingEx) { }
+        catch (Exception addingEx) { }
     }
 
-    static string addedEventNames = "";
-    static string addedTextboxTextChangedEventNames = "";
 
-    private static void CreateAndAttachDynamicEventHandler(Control control, string eventName)
-    {
-        string fullEventName = GetEventName(control, eventName);
-
-        if (!addedEventNames.Contains(fullEventName))
-        {
-            addedEventNames += fullEventName + ";";
-            EventInfo eventInfo = control.GetType().GetEvent(eventName);
-            if (eventInfo != null)
-            {
-                if (eventName == "KeyDown")
-                {
-                    string h = "";
-                }
-
-                eventInfo.AddEventHandler(control, DynamicEventHandler(eventName));
-            }
-        }
-    }
-
-    static EventHandler DynamicEventHandler(string eventName)
-    {
-#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
-        return delegate (object sender, EventArgs e)
-        {
-            ReconnectSocketOnDisconnect();
-            string eventArgs = ConvertPropertiesToJson(e);
-            websocket.Send("nwfEventEmit: " + (sender as Control).Name + "_" + eventName + "nwfEventArgs:" + eventArgs);
-        };
-#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
-    }
-
-    static string ConvertPropertiesToJson(object obj)
-    {
-        StringBuilder jsonBuilder = new StringBuilder("{");
-        Type type = obj.GetType();
-        PropertyInfo[] properties = type.GetProperties();
-
-        bool commaNeeded = false;
-
-        foreach (var property in properties)
-        {
-            object value = property.GetValue(obj);
-
-            if (commaNeeded) jsonBuilder.Append(",");
-
-            jsonBuilder.AppendFormat("\"{0}\":", property.Name);
-
-            if (value != null && property.PropertyType.Namespace != "System")
-            {
-                jsonBuilder.Append(ConvertPropertiesToJson(value));
-            }
-            else
-            {
-                jsonBuilder.AppendFormat("\"{0}\"", value);
-            }
-
-            commaNeeded = true;
-        }
-
-        jsonBuilder.Append("}");
-
-        return jsonBuilder.ToString();
-    }
-
-    static void ReconnectSocketOnDisconnect()
+    public static void ReconnectSocketOnDisconnect()
     {
         if (websocket == null || (websocket.State != WebSocketState.Open && websocket.State != WebSocketState.Connecting))
         {
             initializeWebsocket(socketPort);
         }
-    }
-
-
-
-    private static void Control_TextChanged(object? sender, EventArgs e)
-    {
-        string eventName = GetEventName(sender as Control, "TextChanged");
-        ReconnectSocketOnDisconnect();
-        string eventArgs = ConvertPropertiesToJson(e);
-        websocket.Send("nwfEventEmit: " + eventName + "nwfEventArgs:" + eventArgs);
     }
 
     static string scriptWebsocket(int port)
@@ -500,7 +421,7 @@ return new Promise((resolve, reject) => {
     }
 
 
-    static WebSocket websocket = null;
+    public static WebSocket websocket = null;
     static void initializeWebsocket(int port)
     {
         string ip = "localhost";
@@ -549,8 +470,6 @@ return new Promise((resolve, reject) => {
     {
         string message = e.Message.ToString().Trim().Trim();
 
-
-
         try
         {
 
@@ -577,8 +496,6 @@ return new Promise((resolve, reject) => {
                             object returnValue = methodInfo.Invoke(control, null);
                             websocket.Send(returnValue.ToString());
                         });
-
-                        //
                     }
 
                     if(controlType.Name == "TextBox" && methodName == "AppendText")
@@ -641,7 +558,6 @@ return new Promise((resolve, reject) => {
                             websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
 
-
                     }
                     else
                     {
@@ -664,8 +580,6 @@ return new Promise((resolve, reject) => {
                     var property = control.GetType().GetProperty(propertyName);
                     if (property == null) { websocket.Send("Property not found"); return; }
                     object convertedValue = null;
-
-
 
                     string propertyValue = message.Split(':')[2];
 
@@ -738,19 +652,7 @@ return new Promise((resolve, reject) => {
 
     }
 
-    static string GetEventName(Control control, string eventName)
-    {
-        EventInfo eventInfo = control.GetType().GetEvent(eventName);
 
-        if (eventInfo != null)
-        {
-            return $"{control.Name}_{eventInfo.Name}";
-        }
-        else
-        {
-            return null;
-        }
-    }
 
     static string newLineDouble()
     {
@@ -799,5 +701,233 @@ return new Promise((resolve, reject) => {
         }
 
         return controlsWithTag;
+    }
+}
+
+static class CsharpEventHandlers
+{
+    public static string delegatesGenerated = "";
+    public static string delegatesRunnerGenerated = "";
+
+    static string addedEventNames = "";
+    static string addedTextboxTextChangedEventNames = "";
+    static string eventArgsTypeNames = "";
+    static string eventHandlersTypesNames = "";
+
+    public static string GetEventName(Control control, string eventName)
+    {
+        EventInfo eventInfo = control.GetType().GetEvent(eventName);
+
+        if (eventInfo != null)
+        {
+            return $"{control.Name}_{eventInfo.Name}";
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public static void CreateAndAttachDynamicEventHandler(Control control, string eventName)
+    {
+        string fullEventName = GetEventName(control, eventName);
+
+        if (!addedEventNames.Contains(fullEventName))
+        {
+            addedEventNames += fullEventName + ";";
+            EventInfo eventInfo = control.GetType().GetEvent(eventName);
+            if (eventInfo != null)
+            {
+                if (eventInfo.EventHandlerType.Name.Equals("EventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_EventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("InvalidateEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_InvalidateEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("KeyEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_KeyEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("KeyPressEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_KeyPressEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("LayoutEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_LayoutEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("MouseEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_MouseEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("PaintEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_PaintEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("PreviewKeyDownEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_PreviewKeyDownEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("QueryContinueDragEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_QueryContinueDragEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("CancelEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_CancelEventHandler(eventName));
+                }
+
+                CsharpEventHandlers.GenerateEventHandlerDelegatesString(eventName, eventInfo.EventHandlerType.Name, eventInfo.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType.Name);
+
+            }
+        }
+    }
+
+    // i use delegatesGenerated and delegatesRunnerGenerated strings to generate C# delegate and their runners and then paste this stuff manually
+    private static void GenerateEventHandlerDelegatesString(string eventName, string eventHandlerType, string eventArgsType)
+    {
+        if (eventHandlersTypesNames.Contains(eventHandlerType))
+        {
+            return;
+        }
+        else
+        {
+            eventHandlersTypesNames += eventHandlerType + ";";
+        }
+
+        delegatesGenerated += "public static " + eventHandlerType + " CreateDynamic_" + eventHandlerType + " (string eventName){ ";
+        delegatesGenerated += @"return (sender, e) => { string eventArgs = ConvertPropertiesToJson(e); nwfEventHandler(eventName, sender, eventArgs); };";
+        delegatesGenerated += "}";
+
+
+        if (delegatesRunnerGenerated != "")
+        {
+            delegatesRunnerGenerated += "else ";
+        }
+
+        delegatesRunnerGenerated += "if (eventInfo.EventHandlerType.Name.Equals(\"" + eventHandlerType + "\"" + "))" + "{ " + "eventInfo.AddEventHandler(control,  CreateDynamic_" + eventHandlerType + "(eventName)); }";
+    }
+
+    public static void nwfEventHandler(string eventName, object sender, string eventArgs)
+    {
+        NodeControls.ReconnectSocketOnDisconnect();
+        //System.Diagnostics.Debug.WriteLine(eventName);
+        NodeControls.websocket.Send("nwfEventEmit: " + (sender as Control).Name + "_" + eventName + "nwfEventArgs:" + eventArgs);
+    }
+
+
+    static string ConvertPropertiesToJson(object obj)
+    {
+
+        StringBuilder jsonBuilder = new StringBuilder("{");
+        Type type = obj.GetType();
+
+        if (!type.Name.Contains("Event")) return new StringBuilder("{}").ToString();
+
+        PropertyInfo[] properties = type.GetProperties();
+
+        bool commaNeeded = false;
+
+        try
+        {
+            foreach (var property in properties)
+            {
+                object value = property.GetValue(obj);
+
+                if (commaNeeded) jsonBuilder.Append(",");
+
+                jsonBuilder.AppendFormat("\"{0}\":", property.Name);
+
+                if (value != null && property.PropertyType.Namespace != "System")
+                {
+                    jsonBuilder.Append(ConvertPropertiesToJson(value));
+                }
+                else
+                {
+                    jsonBuilder.AppendFormat("\"{0}\"", value);
+                }
+
+                commaNeeded = true;
+            }
+        }
+        catch (Exception ee) { return new StringBuilder("{}").ToString(); }
+
+        jsonBuilder.Append("}");
+
+        return jsonBuilder.ToString();
+
+    }
+
+    public static EventHandler CreateDynamic_EventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static InvalidateEventHandler CreateDynamic_InvalidateEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static KeyEventHandler CreateDynamic_KeyEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static KeyPressEventHandler CreateDynamic_KeyPressEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static LayoutEventHandler CreateDynamic_LayoutEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static MouseEventHandler CreateDynamic_MouseEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static PaintEventHandler CreateDynamic_PaintEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static PreviewKeyDownEventHandler CreateDynamic_PreviewKeyDownEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static QueryContinueDragEventHandler CreateDynamic_QueryContinueDragEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static CancelEventHandler CreateDynamic_CancelEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
     }
 }

@@ -588,7 +588,7 @@ class Control {
     }
 }
 
-class ClickableControl extends Control{
+class ClickableControl extends Control {
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
         super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
@@ -1019,7 +1019,7 @@ class NumericUpDown extends UpDownAbleControl {
     }
 }
 
-class Form extends ClickableControl{
+class Form extends ClickableControl {
 
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
