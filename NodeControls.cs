@@ -22,6 +22,7 @@ static class NodeControls
     static string eventsEmitTextBoxTextChanged = "";
     static string usedNames = "";
 
+
     public static async void Generate(Form form, string tag, string outputPath)
     {
         controls = TraverseSubControlsWithTag(form, "null");
@@ -136,8 +137,41 @@ static class NodeControls
         //CsharpEventHandlers.delegatesGenerated
     }
 
+    static string generatedJsControlClassEvents = ""; // i use this string to generate JS event names and then paste them into controls class manually
+
     static string[] commonEventNames = {
+        "AutoSizeChanged",
+        "BackColorChanged",
+        "BackgroundImageChanged",
+        "BackgroundImageLayoutChanged",
+        "BindingContextChanged",
+        "CausesValidationChanged",
+        "ChangeUICues",
         "Click",
+        "ClientSizeChanged",
+        "ContextMenuStripChanged",
+        "ControlAdded",
+        "ControlRemoved",
+        "CreateControl",
+        "CursorChanged",
+        "DockChanged",
+        "DoubleClick",
+        "DpiChangedAfterParent",
+        "DpiChangedBeforeParent",
+        "DragDrop",
+        "DragEnter",
+        "DragLeave",
+        "DragOver",
+        "EnabledChanged",
+        "Enter",
+        "FontChanged",
+        "ForeColorChanged",
+        "GiveFeedback",
+        "GotFocus",
+        "HandleCreated",
+        "HandleDestroyed",
+        "HelpRequested",
+        "ImeModeChanged",
         "Invalidated",
         "KeyDown",
         "KeyPress",
@@ -158,7 +192,7 @@ static class NodeControls
         "MouseUp",
         "MouseWheel",
         "Move",
-        // "OnNotifyMessage" is not added
+        //"NotifyMessage",
         "PaddingChanged",
         "Paint",
         "PaintBackground",
@@ -186,25 +220,31 @@ static class NodeControls
         "TextChanged",
         "Validated",
         "Validating",
-        "VisibleChanged",
-        "GotFocus"
+        "VisibleChanged"
     };
 
     public static void LinkControlJSCommonEvents(Control control)
     {
-        string generatedJsControlClassEvents = ""; // i use this string to generate JS event names and then paste them into controls class manually
-
         foreach (var eventName in commonEventNames)
         {
-            LinkJS_Event(control, eventName);
+            if(eventName == "Click")
+            {
+                string f = "";
+            }
+            bool cont = generatedJsControlClassEvents.Contains("'" + eventName + "'");
+            if (!cont)
+            {
 
-            generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
-                this._AddEventHandler('" + eventName + @"', handler);
+                    generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
+                    this._AddEventHandler('" + eventName + @"', handler);
+                }
+
+                _" + eventName + @"(eventArgs){
+                    this._FireEvent('" + eventName + @"', eventArgs);
+                }" + newLineDouble();
             }
 
-            " + eventName + @"(eventArgs){
-                this._FireEvent('" + eventName + @"', eventArgs);
-            }" + newLineDouble();
+            LinkJS_Event(control, eventName);
         }
 
     }
@@ -274,7 +314,7 @@ let Controls = {
             if (fullEventName != null)
             {
                 script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
-                eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Name + "." + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+                eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
                 usedNames += fullEventName.ToString() + "," + newLineDouble();
             }
         }
@@ -742,6 +782,26 @@ static class CsharpEventHandlers
                 {
                     eventInfo.AddEventHandler(control, CreateDynamic_EventHandler(eventName));
                 }
+                else if (eventInfo.EventHandlerType.Name.Equals("UICuesEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_UICuesEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("ControlEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_ControlEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("DragEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_DragEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("GiveFeedbackEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_GiveFeedbackEventHandler(eventName));
+                }
+                else if (eventInfo.EventHandlerType.Name.Equals("HelpEventHandler"))
+                {
+                    eventInfo.AddEventHandler(control, CreateDynamic_HelpEventHandler(eventName));
+                }
                 else if (eventInfo.EventHandlerType.Name.Equals("InvalidateEventHandler"))
                 {
                     eventInfo.AddEventHandler(control, CreateDynamic_InvalidateEventHandler(eventName));
@@ -867,6 +927,41 @@ static class CsharpEventHandlers
             nwfEventHandler(eventName, sender, eventArgs);
         };
     }
+    public static UICuesEventHandler CreateDynamic_UICuesEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static ControlEventHandler CreateDynamic_ControlEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static DragEventHandler CreateDynamic_DragEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static GiveFeedbackEventHandler CreateDynamic_GiveFeedbackEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
+    public static HelpEventHandler CreateDynamic_HelpEventHandler(string eventName)
+    {
+        return (sender, e) => {
+            string eventArgs = ConvertPropertiesToJson(e);
+            nwfEventHandler(eventName, sender, eventArgs);
+        };
+    }
     public static InvalidateEventHandler CreateDynamic_InvalidateEventHandler(string eventName)
     {
         return (sender, e) => {
@@ -929,5 +1024,29 @@ static class CsharpEventHandlers
             string eventArgs = ConvertPropertiesToJson(e);
             nwfEventHandler(eventName, sender, eventArgs);
         };
+    }
+
+    private static void PrintEventNamesFromSourceCode()
+    {
+        string eventMethods = @"";
+
+        string[] methodSignatures = eventMethods.Split(new string[] { "protected virtual void ", "(" }, StringSplitOptions.RemoveEmptyEntries);
+
+        List<string> methodNames = new List<string>();
+
+        for (int i = 0; i < methodSignatures.Length; i += 1)
+        {
+            string methodName = methodSignatures[i].Trim();
+
+            if (methodName.Contains("On"))
+            {
+                methodNames.Add(methodName.Replace("On", ""));
+            }
+        }
+
+        foreach (var eventName in methodNames)
+        {
+            System.Diagnostics.Debug.WriteLine("\"" + eventName + "\"" + ",");
+        }
     }
 }

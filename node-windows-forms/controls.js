@@ -23,305 +23,485 @@ class Control {
         this._eventHandlers = {};
     }
 
+    OnAutoSizeChanged(handler) {
+        this._AddEventHandler('AutoSizeChanged', handler);
+    }
+    _AutoSizeChanged(eventArgs) {
+        this._FireEvent('AutoSizeChanged', eventArgs);
+    }
+    OnBackColorChanged(handler) {
+        this._AddEventHandler('BackColorChanged', handler);
+    }
+    _BackColorChanged(eventArgs) {
+        this._FireEvent('BackColorChanged', eventArgs);
+    }
+    OnBackgroundImageChanged(handler) {
+        this._AddEventHandler('BackgroundImageChanged', handler);
+    }
+    _BackgroundImageChanged(eventArgs) {
+        this._FireEvent('BackgroundImageChanged', eventArgs);
+    }
+    OnBackgroundImageLayoutChanged(handler) {
+        this._AddEventHandler('BackgroundImageLayoutChanged', handler);
+    }
+    _BackgroundImageLayoutChanged(eventArgs) {
+        this._FireEvent('BackgroundImageLayoutChanged', eventArgs);
+    }
+    OnBindingContextChanged(handler) {
+        this._AddEventHandler('BindingContextChanged', handler);
+    }
+    _BindingContextChanged(eventArgs) {
+        this._FireEvent('BindingContextChanged', eventArgs);
+    }
+    OnCausesValidationChanged(handler) {
+        this._AddEventHandler('CausesValidationChanged', handler);
+    }
+    _CausesValidationChanged(eventArgs) {
+        this._FireEvent('CausesValidationChanged', eventArgs);
+    }
+    OnChangeUICues(handler) {
+        this._AddEventHandler('ChangeUICues', handler);
+    }
+    _ChangeUICues(eventArgs) {
+        this._FireEvent('ChangeUICues', eventArgs);
+    }
     OnClick(handler) {
         this._AddEventHandler('Click', handler);
     }
-    Click(eventArgs) {
+    _Click(eventArgs) {
         this._FireEvent('Click', eventArgs);
+    }
+    OnClientSizeChanged(handler) {
+        this._AddEventHandler('ClientSizeChanged', handler);
+    }
+    _ClientSizeChanged(eventArgs) {
+        this._FireEvent('ClientSizeChanged', eventArgs);
+    }
+    OnContextMenuStripChanged(handler) {
+        this._AddEventHandler('ContextMenuStripChanged', handler);
+    }
+    _ContextMenuStripChanged(eventArgs) {
+        this._FireEvent('ContextMenuStripChanged', eventArgs);
+    }
+    OnControlAdded(handler) {
+        this._AddEventHandler('ControlAdded', handler);
+    }
+    _ControlAdded(eventArgs) {
+        this._FireEvent('ControlAdded', eventArgs);
+    }
+    OnControlRemoved(handler) {
+        this._AddEventHandler('ControlRemoved', handler);
+    }
+    _ControlRemoved(eventArgs) {
+        this._FireEvent('ControlRemoved', eventArgs);
+    }
+    OnCreateControl(handler) {
+        this._AddEventHandler('CreateControl', handler);
+    }
+    _CreateControl(eventArgs) {
+        this._FireEvent('CreateControl', eventArgs);
+    }
+    OnCursorChanged(handler) {
+        this._AddEventHandler('CursorChanged', handler);
+    }
+    _CursorChanged(eventArgs) {
+        this._FireEvent('CursorChanged', eventArgs);
+    }
+    OnDockChanged(handler) {
+        this._AddEventHandler('DockChanged', handler);
+    }
+    _DockChanged(eventArgs) {
+        this._FireEvent('DockChanged', eventArgs);
+    }
+    OnDoubleClick(handler) {
+        this._AddEventHandler('DoubleClick', handler);
+    }
+    _DoubleClick(eventArgs) {
+        this._FireEvent('DoubleClick', eventArgs);
+    }
+    OnDpiChangedAfterParent(handler) {
+        this._AddEventHandler('DpiChangedAfterParent', handler);
+    }
+    _DpiChangedAfterParent(eventArgs) {
+        this._FireEvent('DpiChangedAfterParent', eventArgs);
+    }
+    OnDpiChangedBeforeParent(handler) {
+        this._AddEventHandler('DpiChangedBeforeParent', handler);
+    }
+    _DpiChangedBeforeParent(eventArgs) {
+        this._FireEvent('DpiChangedBeforeParent', eventArgs);
+    }
+    OnDragDrop(handler) {
+        this._AddEventHandler('DragDrop', handler);
+    }
+    _DragDrop(eventArgs) {
+        this._FireEvent('DragDrop', eventArgs);
+    }
+    OnDragEnter(handler) {
+        this._AddEventHandler('DragEnter', handler);
+    }
+    _DragEnter(eventArgs) {
+        this._FireEvent('DragEnter', eventArgs);
+    }
+    OnDragLeave(handler) {
+        this._AddEventHandler('DragLeave', handler);
+    }
+    _DragLeave(eventArgs) {
+        this._FireEvent('DragLeave', eventArgs);
+    }
+    OnDragOver(handler) {
+        this._AddEventHandler('DragOver', handler);
+    }
+    _DragOver(eventArgs) {
+        this._FireEvent('DragOver', eventArgs);
+    }
+    OnEnabledChanged(handler) {
+        this._AddEventHandler('EnabledChanged', handler);
+    }
+    _EnabledChanged(eventArgs) {
+        this._FireEvent('EnabledChanged', eventArgs);
+    }
+    OnEnter(handler) {
+        this._AddEventHandler('Enter', handler);
+    }
+    _Enter(eventArgs) {
+        this._FireEvent('Enter', eventArgs);
+    }
+    OnFontChanged(handler) {
+        this._AddEventHandler('FontChanged', handler);
+    }
+    _FontChanged(eventArgs) {
+        this._FireEvent('FontChanged', eventArgs);
+    }
+    OnForeColorChanged(handler) {
+        this._AddEventHandler('ForeColorChanged', handler);
+    }
+    _ForeColorChanged(eventArgs) {
+        this._FireEvent('ForeColorChanged', eventArgs);
+    }
+    OnGiveFeedback(handler) {
+        this._AddEventHandler('GiveFeedback', handler);
+    }
+    _GiveFeedback(eventArgs) {
+        this._FireEvent('GiveFeedback', eventArgs);
+    }
+    OnGotFocus(handler) {
+        this._AddEventHandler('GotFocus', handler);
+    }
+    _GotFocus(eventArgs) {
+        this._FireEvent('GotFocus', eventArgs);
+    }
+    OnHandleCreated(handler) {
+        this._AddEventHandler('HandleCreated', handler);
+    }
+    _HandleCreated(eventArgs) {
+        this._FireEvent('HandleCreated', eventArgs);
+    }
+    OnHandleDestroyed(handler) {
+        this._AddEventHandler('HandleDestroyed', handler);
+    }
+    _HandleDestroyed(eventArgs) {
+        this._FireEvent('HandleDestroyed', eventArgs);
+    }
+    OnHelpRequested(handler) {
+        this._AddEventHandler('HelpRequested', handler);
+    }
+    _HelpRequested(eventArgs) {
+        this._FireEvent('HelpRequested', eventArgs);
+    }
+    OnImeModeChanged(handler) {
+        this._AddEventHandler('ImeModeChanged', handler);
+    }
+    _ImeModeChanged(eventArgs) {
+        this._FireEvent('ImeModeChanged', eventArgs);
     }
     OnInvalidated(handler) {
         this._AddEventHandler('Invalidated', handler);
     }
-    Invalidated(eventArgs) {
+    _Invalidated(eventArgs) {
         this._FireEvent('Invalidated', eventArgs);
     }
     OnKeyDown(handler) {
         this._AddEventHandler('KeyDown', handler);
     }
-    KeyDown(eventArgs) {
+    _KeyDown(eventArgs) {
         this._FireEvent('KeyDown', eventArgs);
     }
     OnKeyPress(handler) {
         this._AddEventHandler('KeyPress', handler);
     }
-    KeyPress(eventArgs) {
+    _KeyPress(eventArgs) {
         this._FireEvent('KeyPress', eventArgs);
     }
     OnKeyUp(handler) {
         this._AddEventHandler('KeyUp', handler);
     }
-    KeyUp(eventArgs) {
+    _KeyUp(eventArgs) {
         this._FireEvent('KeyUp', eventArgs);
     }
     OnLayout(handler) {
         this._AddEventHandler('Layout', handler);
     }
-    Layout(eventArgs) {
+    _Layout(eventArgs) {
         this._FireEvent('Layout', eventArgs);
     }
     OnLeave(handler) {
         this._AddEventHandler('Leave', handler);
     }
-    Leave(eventArgs) {
+    _Leave(eventArgs) {
         this._FireEvent('Leave', eventArgs);
     }
     OnLocationChanged(handler) {
         this._AddEventHandler('LocationChanged', handler);
     }
-    LocationChanged(eventArgs) {
+    _LocationChanged(eventArgs) {
         this._FireEvent('LocationChanged', eventArgs);
     }
     OnLostFocus(handler) {
         this._AddEventHandler('LostFocus', handler);
     }
-    LostFocus(eventArgs) {
+    _LostFocus(eventArgs) {
         this._FireEvent('LostFocus', eventArgs);
     }
     OnMarginChanged(handler) {
         this._AddEventHandler('MarginChanged', handler);
     }
-    MarginChanged(eventArgs) {
+    _MarginChanged(eventArgs) {
         this._FireEvent('MarginChanged', eventArgs);
     }
     OnMouseCaptureChanged(handler) {
         this._AddEventHandler('MouseCaptureChanged', handler);
     }
-    MouseCaptureChanged(eventArgs) {
+    _MouseCaptureChanged(eventArgs) {
         this._FireEvent('MouseCaptureChanged', eventArgs);
     }
     OnMouseClick(handler) {
         this._AddEventHandler('MouseClick', handler);
     }
-    MouseClick(eventArgs) {
+    _MouseClick(eventArgs) {
         this._FireEvent('MouseClick', eventArgs);
     }
     OnMouseDoubleClick(handler) {
         this._AddEventHandler('MouseDoubleClick', handler);
     }
-    MouseDoubleClick(eventArgs) {
+    _MouseDoubleClick(eventArgs) {
         this._FireEvent('MouseDoubleClick', eventArgs);
     }
     OnMouseDown(handler) {
         this._AddEventHandler('MouseDown', handler);
     }
-    MouseDown(eventArgs) {
+    _MouseDown(eventArgs) {
         this._FireEvent('MouseDown', eventArgs);
     }
     OnMouseEnter(handler) {
         this._AddEventHandler('MouseEnter', handler);
     }
-    MouseEnter(eventArgs) {
+    _MouseEnter(eventArgs) {
         this._FireEvent('MouseEnter', eventArgs);
     }
     OnMouseHover(handler) {
         this._AddEventHandler('MouseHover', handler);
     }
-    MouseHover(eventArgs) {
+    _MouseHover(eventArgs) {
         this._FireEvent('MouseHover', eventArgs);
     }
     OnMouseLeave(handler) {
         this._AddEventHandler('MouseLeave', handler);
     }
-    MouseLeave(eventArgs) {
+    _MouseLeave(eventArgs) {
         this._FireEvent('MouseLeave', eventArgs);
     }
     OnMouseMove(handler) {
         this._AddEventHandler('MouseMove', handler);
     }
-    MouseMove(eventArgs) {
+    _MouseMove(eventArgs) {
         this._FireEvent('MouseMove', eventArgs);
     }
     OnMouseUp(handler) {
         this._AddEventHandler('MouseUp', handler);
     }
-    MouseUp(eventArgs) {
+    _MouseUp(eventArgs) {
         this._FireEvent('MouseUp', eventArgs);
     }
     OnMouseWheel(handler) {
         this._AddEventHandler('MouseWheel', handler);
     }
-    MouseWheel(eventArgs) {
+    _MouseWheel(eventArgs) {
         this._FireEvent('MouseWheel', eventArgs);
     }
     OnMove(handler) {
         this._AddEventHandler('Move', handler);
     }
-    Move(eventArgs) {
+    _Move(eventArgs) {
         this._FireEvent('Move', eventArgs);
     }
     OnPaddingChanged(handler) {
         this._AddEventHandler('PaddingChanged', handler);
     }
-    PaddingChanged(eventArgs) {
+    _PaddingChanged(eventArgs) {
         this._FireEvent('PaddingChanged', eventArgs);
     }
     OnPaint(handler) {
         this._AddEventHandler('Paint', handler);
     }
-    Paint(eventArgs) {
+    _Paint(eventArgs) {
         this._FireEvent('Paint', eventArgs);
     }
     OnPaintBackground(handler) {
         this._AddEventHandler('PaintBackground', handler);
     }
-    PaintBackground(eventArgs) {
+    _PaintBackground(eventArgs) {
         this._FireEvent('PaintBackground', eventArgs);
     }
     OnParentBackColorChanged(handler) {
         this._AddEventHandler('ParentBackColorChanged', handler);
     }
-    ParentBackColorChanged(eventArgs) {
+    _ParentBackColorChanged(eventArgs) {
         this._FireEvent('ParentBackColorChanged', eventArgs);
     }
     OnParentBackgroundImageChanged(handler) {
         this._AddEventHandler('ParentBackgroundImageChanged', handler);
     }
-    ParentBackgroundImageChanged(eventArgs) {
+    _ParentBackgroundImageChanged(eventArgs) {
         this._FireEvent('ParentBackgroundImageChanged', eventArgs);
     }
     OnParentBindingContextChanged(handler) {
         this._AddEventHandler('ParentBindingContextChanged', handler);
     }
-    ParentBindingContextChanged(eventArgs) {
+    _ParentBindingContextChanged(eventArgs) {
         this._FireEvent('ParentBindingContextChanged', eventArgs);
     }
     OnParentChanged(handler) {
         this._AddEventHandler('ParentChanged', handler);
     }
-    ParentChanged(eventArgs) {
+    _ParentChanged(eventArgs) {
         this._FireEvent('ParentChanged', eventArgs);
     }
     OnParentCursorChanged(handler) {
         this._AddEventHandler('ParentCursorChanged', handler);
     }
-    ParentCursorChanged(eventArgs) {
+    _ParentCursorChanged(eventArgs) {
         this._FireEvent('ParentCursorChanged', eventArgs);
     }
     OnParentEnabledChanged(handler) {
         this._AddEventHandler('ParentEnabledChanged', handler);
     }
-    ParentEnabledChanged(eventArgs) {
+    _ParentEnabledChanged(eventArgs) {
         this._FireEvent('ParentEnabledChanged', eventArgs);
     }
     OnParentFontChanged(handler) {
         this._AddEventHandler('ParentFontChanged', handler);
     }
-    ParentFontChanged(eventArgs) {
+    _ParentFontChanged(eventArgs) {
         this._FireEvent('ParentFontChanged', eventArgs);
     }
     OnParentForeColorChanged(handler) {
         this._AddEventHandler('ParentForeColorChanged', handler);
     }
-    ParentForeColorChanged(eventArgs) {
+    _ParentForeColorChanged(eventArgs) {
         this._FireEvent('ParentForeColorChanged', eventArgs);
     }
     OnParentRightToLeftChanged(handler) {
         this._AddEventHandler('ParentRightToLeftChanged', handler);
     }
-    ParentRightToLeftChanged(eventArgs) {
+    _ParentRightToLeftChanged(eventArgs) {
         this._FireEvent('ParentRightToLeftChanged', eventArgs);
     }
     OnParentVisibleChanged(handler) {
         this._AddEventHandler('ParentVisibleChanged', handler);
     }
-    ParentVisibleChanged(eventArgs) {
+    _ParentVisibleChanged(eventArgs) {
         this._FireEvent('ParentVisibleChanged', eventArgs);
     }
     OnPreviewKeyDown(handler) {
         this._AddEventHandler('PreviewKeyDown', handler);
     }
-    PreviewKeyDown(eventArgs) {
+    _PreviewKeyDown(eventArgs) {
         this._FireEvent('PreviewKeyDown', eventArgs);
     }
     OnPrint(handler) {
         this._AddEventHandler('Print', handler);
     }
-    Print(eventArgs) {
+    _Print(eventArgs) {
         this._FireEvent('Print', eventArgs);
     }
     OnQueryContinueDrag(handler) {
         this._AddEventHandler('QueryContinueDrag', handler);
     }
-    QueryContinueDrag(eventArgs) {
+    _QueryContinueDrag(eventArgs) {
         this._FireEvent('QueryContinueDrag', eventArgs);
     }
     OnRegionChanged(handler) {
         this._AddEventHandler('RegionChanged', handler);
     }
-    RegionChanged(eventArgs) {
+    _RegionChanged(eventArgs) {
         this._FireEvent('RegionChanged', eventArgs);
     }
     OnResize(handler) {
         this._AddEventHandler('Resize', handler);
     }
-    Resize(eventArgs) {
+    _Resize(eventArgs) {
         this._FireEvent('Resize', eventArgs);
     }
     OnRightToLeftChanged(handler) {
         this._AddEventHandler('RightToLeftChanged', handler);
     }
-    RightToLeftChanged(eventArgs) {
+    _RightToLeftChanged(eventArgs) {
         this._FireEvent('RightToLeftChanged', eventArgs);
     }
     OnSizeChanged(handler) {
         this._AddEventHandler('SizeChanged', handler);
     }
-    SizeChanged(eventArgs) {
+    _SizeChanged(eventArgs) {
         this._FireEvent('SizeChanged', eventArgs);
     }
     OnStyleChanged(handler) {
         this._AddEventHandler('StyleChanged', handler);
     }
-    StyleChanged(eventArgs) {
+    _StyleChanged(eventArgs) {
         this._FireEvent('StyleChanged', eventArgs);
     }
     OnSystemColorsChanged(handler) {
         this._AddEventHandler('SystemColorsChanged', handler);
     }
-    SystemColorsChanged(eventArgs) {
+    _SystemColorsChanged(eventArgs) {
         this._FireEvent('SystemColorsChanged', eventArgs);
     }
     OnTabIndexChanged(handler) {
         this._AddEventHandler('TabIndexChanged', handler);
     }
-    TabIndexChanged(eventArgs) {
+    _TabIndexChanged(eventArgs) {
         this._FireEvent('TabIndexChanged', eventArgs);
     }
     OnTabStopChanged(handler) {
         this._AddEventHandler('TabStopChanged', handler);
     }
-    TabStopChanged(eventArgs) {
+    _TabStopChanged(eventArgs) {
         this._FireEvent('TabStopChanged', eventArgs);
     }
     OnTextChanged(handler) {
         this._AddEventHandler('TextChanged', handler);
     }
-    TextChanged(eventArgs) {
+    _TextChanged(eventArgs) {
         this._FireEvent('TextChanged', eventArgs);
     }
     OnValidated(handler) {
         this._AddEventHandler('Validated', handler);
     }
-    Validated(eventArgs) {
+    _Validated(eventArgs) {
         this._FireEvent('Validated', eventArgs);
     }
     OnValidating(handler) {
         this._AddEventHandler('Validating', handler);
     }
-    Validating(eventArgs) {
+    _Validating(eventArgs) {
         this._FireEvent('Validating', eventArgs);
     }
     OnVisibleChanged(handler) {
         this._AddEventHandler('VisibleChanged', handler);
     }
-    VisibleChanged(eventArgs) {
+    _VisibleChanged(eventArgs) {
         this._FireEvent('VisibleChanged', eventArgs);
-    }
-    OnGotFocus(handler) {
-        this._AddEventHandler('GotFocus', handler);
-    }
-    GotFocus(eventArgs) {
-        this._FireEvent('GotFocus', eventArgs);
     }
 
     async _SetProperty(property, value){
@@ -600,7 +780,7 @@ class ClickableControl extends Control {
         super._AddEventHandler('Click', handler);
     }
 
-    Click(eventArgs) {
+    _Click(eventArgs) {
         super._FireEvent('Click', eventArgs);
     }
 }
@@ -623,7 +803,7 @@ class TextBox extends ClickableControl {
         super._AddEventHandler('TextChanged', handler);
     }
 
-    TextChanged(eventArgs){
+    _TextChanged(eventArgs){
         this.textWasChanged = true;
         super._FireEvent('TextChanged', eventArgs);
     }
@@ -857,7 +1037,7 @@ class CheckableButton extends Button {
         super._AddEventHandler('CheckedChanged', handler);
     }
 
-    CheckedChanged(eventArgs){
+    _CheckedChanged(eventArgs){
         super._FireEvent('CheckedChanged', eventArgs);
     }
 
@@ -996,7 +1176,7 @@ class NumericUpDown extends UpDownAbleControl {
         super._AddEventHandler('ValueChanged', handler);
     }
 
-    ValueChanged(eventArgs){
+    _ValueChanged(eventArgs){
         super._FireEvent('ValueChanged', eventArgs);
     }
     
