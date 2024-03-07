@@ -13,6 +13,8 @@ Label
 RadioButton
 CheckBox
 NumericUpDown
+Panel
+TabControl
 ```
 
 <br><br>

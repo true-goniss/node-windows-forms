@@ -768,24 +768,7 @@ class Control {
     }
 }
 
-class ClickableControl extends Control {
-    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
-
-        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
-
-        this._clickHandlers = [];
-    }
-
-    OnClick(handler) {
-        super._AddEventHandler('Click', handler);
-    }
-
-    _Click(eventArgs) {
-        super._FireEvent('Click', eventArgs);
-    }
-}
-
-class TextBox extends ClickableControl {
+class TextBox extends Control {
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
         super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
@@ -918,7 +901,7 @@ class TextBox extends ClickableControl {
 
 
 
-class Button extends ClickableControl {
+class Button extends Control {
     
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
@@ -969,7 +952,7 @@ class Button extends ClickableControl {
     }
 }
 
-class Label extends ClickableControl {
+class Label extends Control {
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
         super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
@@ -1096,7 +1079,7 @@ class CheckBox extends CheckableButton {
 
 }
 
-class UpDownAbleControl extends ClickableControl {
+class UpDownAbleControl extends Control {
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
         super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
@@ -1199,7 +1182,52 @@ class NumericUpDown extends UpDownAbleControl {
     }
 }
 
-class Form extends ClickableControl {
+class TabControl extends Control {
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+    async getTabPages(){
+        return await this._GetProperty('TabPages');
+    }
+}
+
+
+class ScrollableControl extends Control {
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+}
+
+class Panel extends ScrollableControl {
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+}
+
+class TabPage extends Panel {
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+}
+
+
+class Form extends Control {
 
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
 
@@ -1227,6 +1255,9 @@ module.exports = {
     CheckBox,
     NumericUpDown,
     Form,
+    Panel,
+    TabControl,
+    TabPage,
     
     AppearanceCheckable
 };

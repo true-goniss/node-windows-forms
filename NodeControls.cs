@@ -15,21 +15,19 @@ static class NodeControls
 {
     static int socketPort = 1000;
 
-    static Dictionary<string, Control> controls;
-
     static string script = "`use strict`;" + newLineDouble();
     static string eventEmittersJS = "";
-    static string eventsEmitTextBoxTextChanged = "";
     static string usedNames = "";
 
+    static Dictionary<string, Control> controls;
 
     public static async void Generate(Form form, string tag, string outputPath)
     {
-        controls = TraverseSubControlsWithTag(form, "null");
+        controls = new Dictionary<string, Control>();
+        controls = TraverseSubControlsWithTag(form, tag);
 
         script = "`use strict`;" + newLineDouble();
         eventEmittersJS = "";
-        eventsEmitTextBoxTextChanged = "";
         usedNames = "";
 
         socketPort = FindFreePort();
@@ -41,23 +39,42 @@ static class NodeControls
 
         script += scriptWebsocket(socketPort) + newLineDouble();
 
-        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, Form } = require(`./controls`);" + newLineDouble();
+        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, Form } = require(`./controls`);" + newLineDouble();
         script += "let variables = [];" + Environment.NewLine;
 
         DefineJS_Control(form as Control, "Form");
 
         controls.Add(form.Name, form);
 
+
         foreach (Control control in controls.Values)
         {
-            if (control is PictureBox)
+            bool includedControl = false;
+
+            if (control is TabControl)
             {
-                continue;
+                DefineJS_Control(control, "TabControl");
+                includedControl = true;
+            }
+            
+            if (control is Panel && !(control is TabPage))
+            {
+                DefineJS_Control(control, "Panel");
+                includedControl = true;
+            }
+
+            if (control is TabPage)
+            {
+                TabPage tabPage = (TabPage)control;
+
+                DefineJS_Control(control, "TabPage");
+                includedControl = true;
             }
 
             if (control is System.Windows.Forms.Label)
             {
                 DefineJS_Control(control, "Label");
+                includedControl = true;
             }
 
             if (control is CheckBox)
@@ -66,6 +83,7 @@ static class NodeControls
                 DefineJS_Control(control, "CheckBox");
 
                 LinkJS_Event(control, "CheckedChanged");
+                includedControl = true;
             }
 
             if (control is RadioButton)
@@ -73,11 +91,13 @@ static class NodeControls
                 DefineJS_Control(control, "RadioButton");
 
                 LinkJS_Event(control, "CheckedChanged");
+                includedControl = true;
             }
 
             if (control is TextBox)
             {
                 DefineJS_Control(control, "TextBox");
+                includedControl = true;
             }
 
             if (control is NumericUpDown)
@@ -85,14 +105,16 @@ static class NodeControls
                 DefineJS_Control(control, "NumericUpDown");
 
                 LinkJS_Event(control, "ValueChanged");
+                includedControl = true;
             }
 
             if (control is Button)
             {
                 DefineJS_Control(control, "Button");
+                includedControl = true;
             }
 
-            LinkControlJSCommonEvents(control);
+            if (includedControl) LinkControlJSCommonEvents(control);
         }
 
         //AddJS_ControlsIterator();
@@ -227,10 +249,7 @@ static class NodeControls
     {
         foreach (var eventName in commonEventNames)
         {
-            if(eventName == "Click")
-            {
-                string f = "";
-            }
+
             bool cont = generatedJsControlClassEvents.Contains("'" + eventName + "'");
             if (!cont)
             {
@@ -299,8 +318,15 @@ let Controls = {
 
     static void DefineJS_Control(Control control, string classname)
     {
-        script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }, async (name, methodName, value) => { return await invokeControlMethod(`" + control.Name + "`, methodName, value) }); " + newLineDouble();
-        usedNames += control.Name + "," + newLineDouble();
+        if (control is TabPage)
+        {
+            script += control.Parent.Name + "." + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }, async (name, methodName, value) => { return await invokeControlMethod(`" + control.Name + "`, methodName, value) }); " + newLineDouble();
+        }
+        else
+        {
+            script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }, async (name, methodName, value) => { return await invokeControlMethod(`" + control.Name + "`, methodName, value) }); " + newLineDouble();
+            usedNames += control.Name + "," + newLineDouble();
+        }
     }
 
     static void LinkJS_Event(Control control, string eventName)
@@ -313,9 +339,17 @@ let Controls = {
 
             if (fullEventName != null)
             {
-                script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
-                eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
-                usedNames += fullEventName.ToString() + "," + newLineDouble();
+
+                if(control is TabPage)
+                {
+                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+                }
+                else
+                {
+                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+                }
+                //script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
+                //usedNames += fullEventName.ToString() + "," + newLineDouble();
             }
         }
         catch (Exception addingEx) { }
@@ -722,25 +756,34 @@ return new Promise((resolve, reject) => {
 
     static Dictionary<string, Control> TraverseSubControlsWithTag(Control ctrl, string tag)
     {
-        Dictionary<string, Control> controlsWithTag = new Dictionary<string, Control>();
 
         foreach (Control childCtrl in ctrl.Controls)
         {
             string controlTag = (childCtrl.Tag == null) ? "null" : childCtrl.Tag.ToString();
 
-            if (controlTag == tag)
+            if (controlTag == tag && childCtrl.Name != "")
             {
                 try
                 {
-                    controlsWithTag.Add(childCtrl.Name, childCtrl);
+                    controls.Add(childCtrl.Name, childCtrl);
                 }
                 catch (Exception ee) { }
             }
 
-            controlsWithTag.Concat(TraverseSubControlsWithTag(childCtrl, tag));
+            if( childCtrl is TabControl )
+            {
+                TabControl tc = childCtrl as TabControl;
+
+                foreach (TabPage tabPage in tc.TabPages)
+                {
+                    controls.Concat(TraverseSubControlsWithTag(tabPage, tag));
+                }
+            }
+
+            controls.Concat(TraverseSubControlsWithTag(childCtrl, tag));
         }
 
-        return controlsWithTag;
+        return controls;
     }
 }
 
