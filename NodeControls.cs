@@ -42,14 +42,19 @@ static class NodeControls
         script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, Form } = require(`./controls`);" + newLineDouble();
         script += "let variables = [];" + Environment.NewLine;
 
-        DefineJS_Control(form as Control, "Form");
-
         controls.Add(form.Name, form);
-
 
         foreach (Control control in controls.Values)
         {
             bool includedControl = false;
+
+            eventEmittersJS += "if(data.toString().includes(`" + control.Name + "`)) { " + newLineDouble();
+
+            if(control is Form)
+            {
+                DefineJS_Control(control, "Form");
+                includedControl = true;
+            }
 
             if (control is TabControl)
             {
@@ -115,6 +120,8 @@ static class NodeControls
             }
 
             if (includedControl) LinkControlJSCommonEvents(control);
+
+            eventEmittersJS += "return; " +  newLineDouble() + "}" + newLineDouble();
         }
 
         //AddJS_ControlsIterator();
@@ -277,6 +284,17 @@ static class NodeControls
         return port;
     }
 
+    static string getStringTabs(int quan)
+    {
+        string tabs = "";
+
+        for (int i = 1; i < quan; i++)
+        {
+            tabs += "   ";
+        }
+        return tabs;
+    }
+
     /*
     static void AddJS_ControlsIterator()
     {
@@ -342,11 +360,11 @@ let Controls = {
 
                 if(control is TabPage)
                 {
-                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
                 else
                 {
-                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`))" + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1]));" + newLineDouble();
+                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
                 //script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
                 //usedNames += fullEventName.ToString() + "," + newLineDouble();
