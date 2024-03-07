@@ -1141,18 +1141,12 @@ class NumericUpDown extends UpDownAbleControl {
 
     }
 
-    _parseNumberString(numberString) {
-        let withoutThousandsSeparators = numberString.replace(/\./g, '');
-        let parsedNumber = parseFloat(withoutThousandsSeparators.replace(',', '.'));
-        return parsedNumber;
-    }
-
     async getValue(){
-        return this._parseNumberString( await super._GetProperty('Value') );
+        return _parseNumber( await super._GetProperty('Value') );
     }
 
     async setValue(value){
-        super._SetProperty('Value', value)
+        super._SetProperty('Value', _parseNumber( value ));
     }
 
     OnValueChanged(handler){
@@ -1180,6 +1174,96 @@ class NumericUpDown extends UpDownAbleControl {
     async setHexadecimal(Hexadecimal){
         return await this._GetSetBooleanProperty('Hexadecimal', Hexadecimal);
     }
+}
+
+class TrackBar extends Control {
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+    async getValue(){
+        return _parseNumber( await super._GetProperty('Value') );
+    }
+
+    async setValue(value){
+        super._SetProperty('Value', _parseNumber( value ));
+    }
+
+    async getLargeChange(){
+        return _parseNumber( await super._GetProperty('LargeChange') );
+    }
+
+    async setLargeChange(value){
+        super._SetProperty('LargeChange', _parseNumber( value ));
+    }
+
+    async getMaximum(){
+        return _parseNumber( await super._GetProperty('Maximum') );
+    }
+
+    async setMaximum(value){
+        super._SetProperty('Maximum', _parseNumber( value ));
+    }
+
+    async getMinimum(){
+        return _parseNumber( await super._GetProperty('Minimum') );
+    }
+
+    async setMinimum(value){
+        super._SetProperty('Minimum', _parseNumber( value ));
+    }
+
+    async getSmallChange(){
+        return _parseNumber( await super._GetProperty('SmallChange') );
+    }
+
+    async setSmallChange(value){
+        super._SetProperty('SmallChange', _parseNumber( value ));
+    }
+
+    async getTickFrequency(){
+        return _parseNumber( await super._GetProperty('TickFrequency') );
+    }
+
+    async setTickFrequency(value){
+        super._SetProperty('TickFrequency', _parseNumber( value ));
+    }
+
+    OnValueChanged(handler){
+        super._AddEventHandler('ValueChanged', handler);
+    }
+
+    _ValueChanged(eventArgs){
+        super._FireEvent('ValueChanged', eventArgs);
+    }
+
+    OnScroll(handler){
+        super._AddEventHandler('Scroll', handler);
+    }
+
+    _Scroll(eventArgs){
+        super._FireEvent('Scroll', eventArgs);
+    }
+
+    OnRightToLeftLayoutChanged(handler){
+        super._AddEventHandler('RightToLeftLayoutChanged', handler);
+    }
+
+    _RightToLeftLayoutChanged(eventArgs){
+        super._FireEvent('RightToLeftLayoutChanged', eventArgs);
+    }
+
+    OnSystemColorsChanged(handler){
+        super._AddEventHandler('SystemColorsChanged', handler);
+    }
+
+    _SystemColorsChanged(eventArgs){
+        super._FireEvent('SystemColorsChanged', eventArgs);
+    }
+
 }
 
 class TabControl extends Control {
@@ -1226,6 +1310,16 @@ class TabPage extends Panel {
 
 }
 
+class GroupBox extends Control {
+
+    constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {
+
+        super(name, text, getTextCallback, setTextCallback, invokeMethodCallback);
+
+    }
+
+}
+
 
 class Form extends Control {
 
@@ -1247,6 +1341,19 @@ function Boolean(value) {
     }
 }
 
+function _parseNumber(numberString) {
+
+    if (typeof numberString === 'string') {
+        let withoutThousandsSeparators = numberString.replace(/\./g, '');
+        let parsedNumber = parseFloat(withoutThousandsSeparators.replace(',', '.'));
+        return parsedNumber;
+    } else if (typeof numberString === 'number') {
+        return numberString;
+    } else {
+        return null;
+    }
+}
+
 module.exports = {
     TextBox,
     Button,
@@ -1258,6 +1365,8 @@ module.exports = {
     Panel,
     TabControl,
     TabPage,
-    
+    GroupBox,
+    TrackBar,
+
     AppearanceCheckable
 };

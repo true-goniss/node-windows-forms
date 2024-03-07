@@ -39,7 +39,7 @@ static class NodeControls
 
         script += scriptWebsocket(socketPort) + newLineDouble();
 
-        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, Form } = require(`./controls`);" + newLineDouble();
+        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
         script += "let variables = [];" + Environment.NewLine;
 
         controls.Add(form.Name, form);
@@ -53,6 +53,24 @@ static class NodeControls
             if(control is Form)
             {
                 DefineJS_Control(control, "Form");
+                includedControl = true;
+            }
+
+            if (control is GroupBox)
+            {
+                DefineJS_Control(control, "GroupBox");
+                includedControl = true;
+            }
+
+            if (control is TrackBar)
+            {
+                DefineJS_Control(control, "TrackBar");
+
+                LinkJS_Event(control, "ValueChanged");
+                LinkJS_Event(control, "Scroll");
+                LinkJS_Event(control, "RightToLeftLayoutChanged");
+                LinkJS_Event(control, "SystemColorsChanged");
+
                 includedControl = true;
             }
 
@@ -614,39 +632,55 @@ return new Promise((resolve, reject) => {
 
                         if (property.PropertyType.IsEnum)
                         {
-                            object enumValue = property.GetValue(control);
-
-                            Type underlyingType = Enum.GetUnderlyingType(property.PropertyType);
-
-                            if (enumValue.GetType() != underlyingType)
+                            control.Invoke((MethodInvoker)delegate
                             {
-                                enumValue = Convert.ChangeType(enumValue, underlyingType);
-                            }
+                                object enumValue = property.GetValue(control);
 
-                            propertyValue = enumValue.ToString();
-                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                                Type underlyingType = Enum.GetUnderlyingType(property.PropertyType);
+
+                                if (enumValue.GetType() != underlyingType)
+                                {
+                                    enumValue = Convert.ChangeType(enumValue, underlyingType);
+                                }
+
+                                propertyValue = enumValue.ToString();
+                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            });
                         }
                         else if (propertyName == "Size")
                         {
-                            Size size = (Size)property.GetValue(control);
-                            propertyValue = "{ \"width\": " + size.Width + ", \"height\": " + size.Height + " }";
-                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            control.Invoke((MethodInvoker)delegate
+                            {
+                                Size size = (Size)property.GetValue(control);
+                                propertyValue = "{ \"width\": " + size.Width + ", \"height\": " + size.Height + " }";
+                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            });
                         }
                         else if (property.PropertyType.Name == "Point")
                         {
-                            Point point = (Point)property.GetValue(control);
-                            propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
-                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            control.Invoke((MethodInvoker)delegate
+                            {
+                                Point point = (Point)property.GetValue(control);
+                                propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
+                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            });
                         }
                         else if (property.PropertyType.Name == "Color")
                         {
-                            Color color = (Color)property.GetValue(control);
-                            propertyValue = "{ \"a\": " + color.A + ", \"r\": " + color.R + ", \"g\": " + color.G + ", \"b\": " + color.B + " }";
-                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            control.Invoke((MethodInvoker)delegate
+                            {
+                                Color color = (Color)property.GetValue(control);
+                                propertyValue = "{ \"a\": " + color.A + ", \"r\": " + color.R + ", \"g\": " + color.G + ", \"b\": " + color.B + " }";
+                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            });
                         }
                         else
                         {
-                            propertyValue = property.GetValue(control).ToString();
+                            control.Invoke((MethodInvoker)delegate
+                            {
+                                propertyValue = property.GetValue(control).ToString();
+                            });
+
                             websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
 

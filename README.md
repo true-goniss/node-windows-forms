@@ -15,6 +15,8 @@ CheckBox
 NumericUpDown
 Panel
 TabControl
+GroupBox
+TrackBar
 ```
 
 <br><br>
