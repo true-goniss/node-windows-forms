@@ -1320,7 +1320,6 @@ class GroupBox extends Control {
 
 }
 
-
 class Form extends Control {
 
     constructor(name, text, getTextCallback, setTextCallback, invokeMethodCallback) {

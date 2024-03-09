@@ -20,6 +20,7 @@ static class NodeControls
     static string usedNames = "";
 
     static Dictionary<string, Control> controls;
+    static Dictionary<string, string> stringVariables = new Dictionary<string, string>();
 
     public static async void Generate(Form form, string tag, string outputPath)
     {
@@ -145,6 +146,8 @@ static class NodeControls
         //AddJS_ControlsIterator();
 
         usedNames += "getControlProperty,";
+        usedNames += "setStringVariable,";
+        usedNames += "getStringVariable,";
 
 
         usedNames = DeleteLastSymbol(usedNames, ',');
@@ -182,6 +185,35 @@ static class NodeControls
 
         //CsharpEventHandlers.delegatesRunnerGenerated
         //CsharpEventHandlers.delegatesGenerated
+    }
+
+
+    public static bool setStringVariable(string variableName, string value)
+    {
+        try
+        {
+            if (stringVariables.ContainsKey(variableName))
+            {
+                stringVariables[variableName] = value;
+            }
+            else
+            {
+                stringVariables.Add(variableName, value);
+            }
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static string getStringVariable(string variableName)
+    {
+        if (stringVariables.ContainsKey(variableName)) return stringVariables[variableName];
+
+        return "null";
     }
 
     static string generatedJsControlClassEvents = ""; // i use this string to generate JS event names and then paste them into controls class manually
@@ -270,7 +302,7 @@ static class NodeControls
         "VisibleChanged"
     };
 
-    public static void LinkControlJSCommonEvents(Control control)
+    static void LinkControlJSCommonEvents(Control control)
     {
         foreach (var eventName in commonEventNames)
         {
@@ -293,7 +325,7 @@ static class NodeControls
 
     }
 
-    public static int FindFreePort()
+    static int FindFreePort()
     {
         System.Net.Sockets.TcpListener listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
         listener.Start();
@@ -437,7 +469,59 @@ ws.onerror = function()
 });
 console.log(`The WebSocket server is running`);
 
+async function setStringVariable(name, value){
 
+    return new Promise((resolve, reject) => {
+
+        try {
+            clients.forEach((client) => {
+
+                client.send(`nwfSetStrVarName:` + name + `nwfSetStrVarVal:` + value, () => { });
+                resolve(true);
+            });
+
+        }
+        catch(ee){ reject(new Error('WebSocket connection is not open')); }
+
+    });
+}
+
+async function getStringVariable(name) {
+
+return new Promise((resolve, reject) => {
+
+    let responseReceived = false; 
+
+    try {
+        clients.forEach((client) => {
+
+            client.send(`nwfGetStrVarName:` + name, (response) => {
+
+            });
+
+            client.on('message', (response) => {
+                if (responseReceived) return;
+
+                const responseStr = response.toString();
+
+                if( responseStr.includes(`nwfGetStrVarName:` + name) ){ 
+                    responseReceived = true;
+                    clearTimeout(timeout);
+                    resolve(responseStr.split('nwfGetStrVarVal:')[1]);
+                }
+            });
+
+            const timeout = setTimeout(() => {
+                reject(new Error(`Timeout: No response received`));
+            }, 5000);
+
+        });
+
+    }
+    catch(ee){ reject(new Error('WebSocket connection is not open')); }
+
+});
+}
 
 async function getControlProperty(name, property, value) {
 
@@ -763,12 +847,20 @@ return new Promise((resolve, reject) => {
                 }
             }
 
-
-            /*
-            this.BeginInvoke(new Action(async () =>
+            if (message.Contains("nwfGetStrVarName:"))
             {
-                label10.Text = "buysocket rcv: " + DateTime.Now.ToString("HH:mm:ss") + " sessionId " + sessionId + " currency " + accountCurrency;
-            }));*/
+                string varName = message.Split("nwfGetStrVarName:")[1].Split("nwfGetStrVarVal:")[0];
+
+                websocket.Send("nwfGetStrVarName:"+ varName + "nwfGetStrVarVal:" + getStringVariable(varName));
+            }
+
+            if (message.Contains("nwfSetStrVarName:"))
+            {
+                string varName = message.Split("nwfSetStrVarName:")[1].Split("nwfSetStrVarVal:")[0];
+                string varVal = message.Split("nwfSetStrVarVal:")[1];
+
+                setStringVariable(varName, varVal);
+            }
         }
         catch (Exception ee)
         {
@@ -806,6 +898,36 @@ return new Promise((resolve, reject) => {
         }
     }
 
+    /*
+    static private IEnumerable<Component> GetComponentsTimers(Form form)
+    {
+    return from field in form.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+           where typeof(Component).IsAssignableFrom(field.FieldType)
+           let component = (Component)field.GetValue(form)
+           where component != null && component is System.Windows.Forms.Timer
+           select component;
+
+
+    //if(ctrl is Form)
+    //{
+    //    IEnumerable<Component> timers = GetComponentsTimers(ctrl as Form);
+    //    //Component timer = timers.GetEnumerator()[0];
+
+    //    foreach (Component tmr in timers)
+    //    {
+    //        if(tmr is System.Windows.Forms.Timer)
+    //        {
+    //            System.Windows.Forms.Timer timer = (System.Windows.Forms.Timer)tmr;
+    //            //formTimers.Add(timer.Name, timer);
+    //        }
+    //    }
+    //}
+ 
+    }
+
+    static Dictionary<string, System.Windows.Forms.Timer> formTimers = new Dictionary<string, System.Windows.Forms.Timer>();
+    */
+
     static Dictionary<string, Control> TraverseSubControlsWithTag(Control ctrl, string tag)
     {
 
@@ -822,7 +944,12 @@ return new Promise((resolve, reject) => {
                 catch (Exception ee) { }
             }
 
-            if( childCtrl is TabControl )
+            if (childCtrl is System.Windows.Forms.Timer)
+            {
+                string h = "";
+            }
+
+            if ( childCtrl is TabControl )
             {
                 TabControl tc = childCtrl as TabControl;
 
