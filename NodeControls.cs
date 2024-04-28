@@ -49,6 +49,12 @@ static class NodeControls
         script += scriptWebsocket(socketPort) + newLineDouble();
 
         script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
+        script += "const { exec } = require('child_process');" + Environment.NewLine;
+        script += "const ExecutablePath = `" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "`;" + Environment.NewLine;
+        script += "const Run = () => { exec(ExecutablePath); };" + Environment.NewLine;
+
+        usedNames += "Run,";
+
         script += "let variables = [];" + Environment.NewLine;
 
         controls.Add(form.Name, form);
