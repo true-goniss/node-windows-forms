@@ -1,5 +1,6 @@
 node_modules/
 node-windows-forms/form.js
+node-windows-forms/tmp/
 script.js
 package.json
 package-lock.json
