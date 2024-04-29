@@ -51,7 +51,14 @@ static class NodeControls
         script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
         script += "const { exec } = require('child_process');" + Environment.NewLine;
         script += "const ExecutablePath = `" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "`;" + Environment.NewLine;
-        script += "const Run = () => { exec(ExecutablePath); };" + Environment.NewLine;
+
+        script += "const Run = () => { try { ";
+        script += "const childProcess = exec(ExecutablePath); ";
+        script += "childProcess.on('exit', (code) => { process.exit(code); }); ";
+        script += "process.on('exit', (code) => { Exit(); }); ";
+        script += "process.on('SIGINT', (code) => { Exit(); }); ";
+        script += "process.on('SIGHUP', (code) => { Exit(); }); ";
+        script += "process.on('SIGTERM', (code) => { Exit(); }); } catch(err) {} }; " + newLineDouble();
 
         usedNames += "Run,";
 
@@ -575,6 +582,14 @@ return new Promise((resolve, reject) => {
 });
 }
 
+async function Exit(){
+        clients.forEach((client) => {
+            client.send(`nwfApplicationExit`, () => {
+
+            });
+        });
+};
+
 async function invokeControlMethod(name, methodName, value) {
 
 return new Promise((resolve, reject) => {
@@ -677,6 +692,8 @@ return new Promise((resolve, reject) => {
     static async void websocket_MessageReceived(object sender, MessageReceivedEventArgs e)
     {
         string message = e.Message.ToString().Trim().Trim();
+
+        if (message == "nwfApplicationExit") Environment.Exit(0);
 
         try
         {
