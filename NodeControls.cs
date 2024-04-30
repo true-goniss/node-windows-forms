@@ -33,8 +33,8 @@ static class NodeControls
 
         string socketPortFilePath = Path.Combine(outputPath, "tmp", "socketPort.dat");
         socketPort = await FileSystemFuncs.FileReadInt(socketPortFilePath);
-        
-        if(socketPort == 0)
+
+        if (socketPort == 0)
         {
             socketPort = FindFreePort();
         }
@@ -50,10 +50,10 @@ static class NodeControls
 
         script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
         script += "const { exec } = require('child_process');" + Environment.NewLine;
-        script += "const ExecutablePath = `" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "`;" + Environment.NewLine;
+        script += "const ExecutablePath = `\"" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "\"`;" + Environment.NewLine;
 
         script += "const Run = () => { try { ";
-        script += "const childProcess = exec(ExecutablePath); ";
+        script += "const childProcess = exec(ExecutablePath, (error, stdout, stderr) => {   if (error) { console.error(`Error executing ${ executablePath}: ${ error}`); return; } console.log(`stdout: ${stdout}`); console.error(`stderr: ${stderr}`);  }); ";
         script += "childProcess.on('exit', (code) => { process.exit(code); }); ";
         script += "process.on('exit', (code) => { Exit(); }); ";
         script += "process.on('SIGINT', (code) => { Exit(); }); ";
@@ -72,7 +72,7 @@ static class NodeControls
 
             eventEmittersJS += "if(data.toString().includes(`" + control.Name + "`)) { " + newLineDouble();
 
-            if(control is Form)
+            if (control is Form)
             {
                 DefineJS_Control(control, "Form");
                 includedControl = true;
@@ -101,7 +101,7 @@ static class NodeControls
                 DefineJS_Control(control, "TabControl");
                 includedControl = true;
             }
-            
+
             if (control is Panel && !(control is TabPage))
             {
                 DefineJS_Control(control, "Panel");
@@ -161,7 +161,7 @@ static class NodeControls
 
             if (includedControl) LinkControlJSCommonEvents(control);
 
-            eventEmittersJS += "return; " +  newLineDouble() + "}" + newLineDouble();
+            eventEmittersJS += "return; " + newLineDouble() + "}" + newLineDouble();
         }
 
         //AddJS_ControlsIterator();
@@ -332,7 +332,7 @@ static class NodeControls
             if (!cont)
             {
 
-                    generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
+                generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
                     this._AddEventHandler('" + eventName + @"', handler);
                 }
 
@@ -429,7 +429,7 @@ let Controls = {
             if (fullEventName != null)
             {
 
-                if(control is TabPage)
+                if (control is TabPage)
                 {
                     eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
@@ -723,7 +723,7 @@ return new Promise((resolve, reject) => {
                         });
                     }
 
-                    if(controlType.Name == "TextBox" && methodName == "AppendText")
+                    if (controlType.Name == "TextBox" && methodName == "AppendText")
                     {
                         control.Invoke((MethodInvoker)delegate
                         {
@@ -882,7 +882,7 @@ return new Promise((resolve, reject) => {
             {
                 string varName = message.Split("nwfGetStrVarName:")[1].Split("nwfGetStrVarVal:")[0];
 
-                websocket.Send("nwfGetStrVarName:"+ varName + "nwfGetStrVarVal:" + getStringVariable(varName));
+                websocket.Send("nwfGetStrVarName:" + varName + "nwfGetStrVarVal:" + getStringVariable(varName));
             }
 
             if (message.Contains("nwfSetStrVarName:"))
@@ -980,7 +980,7 @@ return new Promise((resolve, reject) => {
                 string h = "";
             }
 
-            if ( childCtrl is TabControl )
+            if (childCtrl is TabControl)
             {
                 TabControl tc = childCtrl as TabControl;
 
