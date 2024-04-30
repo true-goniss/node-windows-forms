@@ -43,6 +43,8 @@ Install 'ws' library via npm. In your javascript code you can use Form controls 
 ```javascript
 const form = require('./node-windows-forms/form');
 
+form.Run();
+
 form.button1.OnClick(async (eventArgs) => {
 
     form.textBox2.setText( await form.textBox1.getText() );
