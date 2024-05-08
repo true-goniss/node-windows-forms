@@ -33,8 +33,8 @@ static class NodeControls
 
         string socketPortFilePath = Path.Combine(outputPath, "tmp", "socketPort.dat");
         socketPort = await FileSystemFuncs.FileReadInt(socketPortFilePath);
-
-        if (socketPort == 0)
+        
+        if(socketPort == 0)
         {
             socketPort = FindFreePort();
         }
@@ -50,17 +50,17 @@ static class NodeControls
 
         script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
         script += "const { exec } = require('child_process');" + Environment.NewLine;
-        script += "const ExecutablePath = `\"" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "\"`;" + Environment.NewLine;
+        script += "const ExecutablePath = `" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "`;" + Environment.NewLine;
 
         script += "const Run = () => { try { ";
-        script += "const childProcess = exec(ExecutablePath, (error, stdout, stderr) => {   if (error) { console.error(`Error executing ${ executablePath}: ${ error}`); return; } console.log(`stdout: ${stdout}`); console.error(`stderr: ${stderr}`);  }); ";
+        script += "const childProcess = exec(ExecutablePath); ";
         script += "childProcess.on('exit', (code) => { process.exit(code); }); ";
         script += "process.on('exit', (code) => { Exit(); }); ";
         script += "process.on('SIGINT', (code) => { Exit(); }); ";
         script += "process.on('SIGHUP', (code) => { Exit(); }); ";
         script += "process.on('SIGTERM', (code) => { Exit(); }); } catch(err) {} }; " + newLineDouble();
 
-        usedNames += "Run,";
+        usedNames += "Run," + Environment.NewLine;
 
         script += "let variables = [];" + Environment.NewLine;
 
@@ -70,9 +70,9 @@ static class NodeControls
         {
             bool includedControl = false;
 
-            eventEmittersJS += "if(data.toString().includes(`" + control.Name + "`)) { " + newLineDouble();
+            eventEmittersJS += tabSeveralTimesString(2) + "if(data.toString().includes(`" + control.Name + "`)) { " + newLineDouble();
 
-            if (control is Form)
+            if(control is Form)
             {
                 DefineJS_Control(control, "Form");
                 includedControl = true;
@@ -101,7 +101,7 @@ static class NodeControls
                 DefineJS_Control(control, "TabControl");
                 includedControl = true;
             }
-
+            
             if (control is Panel && !(control is TabPage))
             {
                 DefineJS_Control(control, "Panel");
@@ -161,14 +161,14 @@ static class NodeControls
 
             if (includedControl) LinkControlJSCommonEvents(control);
 
-            eventEmittersJS += "return; " + newLineDouble() + "}" + newLineDouble();
+            eventEmittersJS += tabSeveralTimesString(2) + "return; " +  newLineDouble() + tabSeveralTimesString(2) + "}" + newLineDouble();
         }
 
         //AddJS_ControlsIterator();
 
-        usedNames += "getControlProperty,";
-        usedNames += "setStringVariable,";
-        usedNames += "getStringVariable,";
+        usedNames += "getControlProperty," + Environment.NewLine;
+        usedNames += "setStringVariable," + Environment.NewLine;
+        usedNames += "getStringVariable," + Environment.NewLine;
 
 
         usedNames = DeleteLastSymbol(usedNames, ',');
@@ -332,7 +332,7 @@ static class NodeControls
             if (!cont)
             {
 
-                generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
+                    generatedJsControlClassEvents += @"    On" + eventName + @"(handler){
                     this._AddEventHandler('" + eventName + @"', handler);
                 }
 
@@ -414,7 +414,7 @@ let Controls = {
         else
         {
             script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }, async (name, methodName, value) => { return await invokeControlMethod(`" + control.Name + "`, methodName, value) }); " + newLineDouble();
-            usedNames += control.Name + "," + newLineDouble();
+            usedNames += control.Name + "," + Environment.NewLine;
         }
     }
 
@@ -429,13 +429,13 @@ let Controls = {
             if (fullEventName != null)
             {
 
-                if (control is TabPage)
+                if(control is TabPage)
                 {
-                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
+                    eventEmittersJS += tabSeveralTimesString(3) + "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
                 else
                 {
-                    eventEmittersJS += "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
+                    eventEmittersJS += tabSeveralTimesString(3) + "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
                 //script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
                 //usedNames += fullEventName.ToString() + "," + newLineDouble();
@@ -466,16 +466,16 @@ wss.on(`connection`,  (ws, request)  => {
 clients.add(ws);
 
 console.log(`form connected`);
-        socket = ws;
-        ws.send(`Welcome, you are connected!`);
-        ws.on(`message`, data => {
+socket = ws;
+ws.send(`Welcome, you are connected!`);
+ws.on(`message`, data => {
 
         //console.log(`form has sent us: ${data}`);
-        if ( data.toString().includes(`nwfEventEmit`) ){
+    if ( data.toString().includes(`nwfEventEmit`) ){
 
-            {{eventEmittersJS}}
+{{eventEmittersJS}}
 
-        }
+    }
 
 });
 
@@ -723,7 +723,7 @@ return new Promise((resolve, reject) => {
                         });
                     }
 
-                    if (controlType.Name == "TextBox" && methodName == "AppendText")
+                    if(controlType.Name == "TextBox" && methodName == "AppendText")
                     {
                         control.Invoke((MethodInvoker)delegate
                         {
@@ -882,7 +882,7 @@ return new Promise((resolve, reject) => {
             {
                 string varName = message.Split("nwfGetStrVarName:")[1].Split("nwfGetStrVarVal:")[0];
 
-                websocket.Send("nwfGetStrVarName:" + varName + "nwfGetStrVarVal:" + getStringVariable(varName));
+                websocket.Send("nwfGetStrVarName:"+ varName + "nwfGetStrVarVal:" + getStringVariable(varName));
             }
 
             if (message.Contains("nwfSetStrVarName:"))
@@ -906,6 +906,18 @@ return new Promise((resolve, reject) => {
     static string newLineDouble()
     {
         return Environment.NewLine + Environment.NewLine;
+    }
+
+    static string tabSeveralTimesString(int count)
+    {
+        string res = "";
+
+        for (int i = 0; i < count; i++)
+        {
+            res += "    ";
+        }
+
+        return res;
     }
 
     static void WriteTextToFile(string filePath, string text, Encoding encoding)
@@ -980,7 +992,7 @@ return new Promise((resolve, reject) => {
                 string h = "";
             }
 
-            if (childCtrl is TabControl)
+            if ( childCtrl is TabControl )
             {
                 TabControl tc = childCtrl as TabControl;
 
