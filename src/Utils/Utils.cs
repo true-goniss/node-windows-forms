@@ -6,27 +6,12 @@ public static class Utils
 {
     // ----------- text ----------- //
 
-    public static string getStringTabs(int quan)
+    public static string getStringTabs(int count, int tabSize = 4)
     {
-        string tabs = "";
+        if (count <= 0 || tabSize <= 0)
+            return string.Empty;
 
-        for (int i = 1; i < quan; i++)
-        {
-            tabs += "   ";
-        }
-        return tabs;
-    }
-
-    public static string tabSeveralTimesString(int count)
-    {
-        string res = "";
-
-        for (int i = 0; i < count; i++)
-        {
-            res += "    ";
-        }
-
-        return res;
+        return new string(' ', count * tabSize);
     }
 
     public static string newLine()

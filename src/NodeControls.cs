@@ -72,7 +72,7 @@ static class NodeControls
         {
             bool includedControl = false;
 
-            eventEmittersJS += tabSeveralTimesString(2) + "if(data.toString().includes(`" + control.Name + "`)) { " + newLineDouble();
+            eventEmittersJS += getStringTabs(2) + "if(data.toString().includes(`" + control.Name + "`)) { " + newLineDouble();
 
             if(control is Form)
             {
@@ -163,20 +163,20 @@ static class NodeControls
 
             if (includedControl) LinkControlJSCommonEvents(control);
 
-            eventEmittersJS += tabSeveralTimesString(2) + "return; " +  newLineDouble() + tabSeveralTimesString(2) + "}" + newLineDouble();
+            eventEmittersJS += getStringTabs(2) + "return; " +  newLineDouble() + getStringTabs(2) + "}" + newLineDouble();
         }
 
         //AddJS_ControlsIterator();
 
-        usedNames += "getControlProperty," + Environment.NewLine;
-        usedNames += "setStringVariable," + Environment.NewLine;
-        usedNames += "getStringVariable," + Environment.NewLine;
+        usedNames += "getControlProperty," + newLine();
+        usedNames += "setStringVariable," + newLine();
+        usedNames += "getStringVariable," + newLine();
 
 
         usedNames = DeleteLastSymbol(usedNames, ',');
 
-        script += Environment.NewLine + "module.exports = {" + newLineDouble();
-        script += usedNames + Environment.NewLine + "};";
+        script += newLine() + "module.exports = {" + newLineDouble();
+        script += usedNames + newLine() + "};";
 
         script = script.Replace("{{eventEmittersJS}}", eventEmittersJS);
 
@@ -353,7 +353,7 @@ static class NodeControls
         else
         {
             script += "const " + control.Name + " = new " + classname + "(`" + control.Name + "`,`" + control.Text + "`, async (name, property) => { return await getControlProperty(`" + control.Name + "`, property); }, async (name, property, value) => { return await setControlProperty(`" + control.Name + "`, property, value" + "); }, async (name, methodName, value) => { return await invokeControlMethod(`" + control.Name + "`, methodName, value) }); " + newLineDouble();
-            usedNames += control.Name + "," + Environment.NewLine;
+            usedNames += control.Name + "," + newLine();
         }
     }
 
@@ -370,11 +370,11 @@ static class NodeControls
 
                 if(control is TabPage)
                 {
-                    eventEmittersJS += tabSeveralTimesString(3) + "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
+                    eventEmittersJS += getStringTabs(3) + "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Parent.Name + "." + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
                 else
                 {
-                    eventEmittersJS += tabSeveralTimesString(3) + "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
+                    eventEmittersJS += getStringTabs(3) + "if (data.toString().includes(`" + fullEventName + "`)){ " + control.Name + "._" + eventName + "(JSON.parse(data.toString().split('nwfEventArgs:')[1])); return; }" + newLineDouble();
                 }
                 //script += "function " + fullEventName + "() { }" + newLineDouble() + control.Name + ".On" + eventName + "(" + fullEventName + ");" + newLineDouble();
                 //usedNames += fullEventName.ToString() + "," + newLineDouble();
