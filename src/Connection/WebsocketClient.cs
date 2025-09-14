@@ -3,29 +3,29 @@ using static EventManager<string>;
 
 public class WebsocketClient
 {
-    WebSocket websocket = null;
+    private WebSocket websocket = null;
 
-    DateTime lastMessageTime;
-    System.Timers.Timer reconnectTimer = null;
+    private DateTime lastMessageTime;
+    private System.Timers.Timer reconnectTimer = null;
 
-    EventManager<string> _eventManager = new();
+    private EventManager<string> _eventManager = new();
 
     public WebsocketClient(string ip, int port)
     {
         this.websocket = new WebSocket("ws://" + ip + ":" + port + "/");
 
-        websocket.Opened += new EventHandler(websocket_Opened);
-        websocket.MessageReceived += websocket_MessageReceived;
+        websocket.Opened += new EventHandler(Websocket_Opened);
+        websocket.MessageReceived += Websocket_MessageReceived;
         websocket.Closed += Websocket_Closed;
         websocket.Open();
     }
 
-    void websocket_Opened(object sender, EventArgs e)
+    private void Websocket_Opened(object sender, EventArgs e)
     {
         lastMessageTime = DateTime.Now;
     }
 
-    void Websocket_Closed(object? sender, EventArgs e)
+    private void Websocket_Closed(object? sender, EventArgs e)
     {
         _eventManager.TriggerEvents("OnClosed", "closed");
 
@@ -38,7 +38,7 @@ public class WebsocketClient
         }
     }
 
-    void ReconnectTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    private void ReconnectTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
         if (websocket.State == WebSocketState.Connecting || websocket.State == WebSocketState.Open) return;
 
@@ -49,7 +49,7 @@ public class WebsocketClient
         catch (Exception ex) { }
     }
 
-    async void websocket_MessageReceived(object sender, MessageReceivedEventArgs e)
+    private async void Websocket_MessageReceived(object sender, MessageReceivedEventArgs e)
     {
         string message = e.Message.ToString().Trim().Trim();
 
