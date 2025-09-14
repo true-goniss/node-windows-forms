@@ -88,4 +88,15 @@ public static class Utils
             TraverseSubControlsWithTagInternal(childCtrl, tag, controls);
         }
     }
+
+    // ----------- misc ----------- //
+
+    public static int FindFreePort()
+    {
+        System.Net.Sockets.TcpListener listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
 }

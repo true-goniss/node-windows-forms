@@ -11,6 +11,7 @@ using static Utils;
 using static FileSystemFuncs;
 using static CsharpEventHandlers;
 using static Scripts;
+using static CodeSections;
 
 static class NodeControls
 {
@@ -29,42 +30,52 @@ static class NodeControls
     {
         controls = TraverseSubControlsWithTag(form, tag);
 
-        script = "`use strict`;" + newLineDouble();
+        script = "";
         eventEmittersJS = "";
-        usedNames = "";
+        usedNames = "Run," + newLine();
 
         string socketPortFilePath = Path.Combine(outputPath, "tmp", "socketPort.dat");
         socketPort = await FileSystemFuncs.FileReadInt(socketPortFilePath);
-        
-        if(socketPort == 0)
-        {
-            socketPort = FindFreePort();
-        }
+
+        socketPort = socketPort == 0 ? FindFreePort() : socketPort;
 
         FileSystemFuncs.FileWriteInt(socketPortFilePath, socketPort);
 
-        if (client == null || client.isInactive())
+        if (client?.isInactive() != false)
         {
-            initializeWebsocket(socketPort);
+            InitializeWebsocket(socketPort);
         }
 
-        script += scriptWebsocket(socketPort) + newLineDouble();
+        var codeFlow = new CodeFlow<JavaScriptGenerator>(new JavaScriptGenerator())
+            .WithOperation(generator => generator.AddStrictMode())
+            .WithOperation(generator => generator.AddLine(scriptWebsocket(socketPort)))
+            .WithOperation(generator => 
+                generator.AddImport("./controls",
+                        "TextBox", "Button", "Label", "RadioButton", "CheckBox",
+                        "NumericUpDown", "TabControl", "Panel", "TabPage",
+                        "GroupBox", "TrackBar", "Form"
+                    )
+                )
+            .WithOperation(generator => generator.AddLine("const { exec } = require('child_process');"))
+            .WithOperation(generator => generator.AddVariable("ExecutablePath", $"`{GetExecutablePath()}`"))
+            .WithOperation(generator => 
 
-        script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
-        script += "const { exec } = require('child_process');" + newLine();
-        script += $"const ExecutablePath = `{GetExecutablePath()}`;" + newLine();
+                generator.AddFunction("Run", "", @"
+                    try { 
+                        const childProcess = exec(ExecutablePath); 
+                        childProcess.on('exit', (code) => { process.exit(code); }); 
+                        process.on('exit', (code) => { Exit(); }); 
+                        process.on('SIGINT', (code) => { Exit(); }); 
+                        process.on('SIGHUP', (code) => { Exit(); }); 
+                        process.on('SIGTERM', (code) => { Exit(); }); 
+                    } catch(err) {}"
+                )
 
-        script += "const Run = () => { try { ";
-        script += "const childProcess = exec(ExecutablePath); ";
-        script += "childProcess.on('exit', (code) => { process.exit(code); }); ";
-        script += "process.on('exit', (code) => { Exit(); }); ";
-        script += "process.on('SIGINT', (code) => { Exit(); }); ";
-        script += "process.on('SIGHUP', (code) => { Exit(); }); ";
-        script += "process.on('SIGTERM', (code) => { Exit(); }); } catch(err) {} }; " + newLineDouble();
+            )
+            .WithOperation(generator => generator.AddVariable("variables", "[]")
+        );
 
-        usedNames += "Run," + newLine();
-
-        script += "let variables = [];" + newLine();
+        script = codeFlow.Compose().Generate();
 
         controls.Add(form.Name, form);
 
@@ -178,7 +189,10 @@ static class NodeControls
         script += newLine() + "module.exports = {" + newLineDouble();
         script += usedNames + newLine() + "};";
 
-        script = script.Replace("{{eventEmittersJS}}", eventEmittersJS);
+        script = script.Replace(
+                CodeSections.GetName(Section.eventEmittersJS),
+                eventEmittersJS
+            );
 
         await FileSystemFuncs.WriteFileWithRetries(
             Path.Combine(outputPath, "form.js"),
@@ -335,15 +349,6 @@ static class NodeControls
 
     }
 
-    static int FindFreePort()
-    {
-        System.Net.Sockets.TcpListener listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
-        listener.Start();
-        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
-    }
-
     static void DefineJS_Control(Control control, string classname)
     {
         if (control is TabPage)
@@ -388,11 +393,11 @@ static class NodeControls
     {
         if (client.isInactive())
         {
-            initializeWebsocket(socketPort);
+            InitializeWebsocket(socketPort);
         }
     }
 
-    static void initializeWebsocket(int port, string ip = "localhost")
+    static void InitializeWebsocket(int port, string ip = "localhost")
     {
         client = new WebsocketClient(ip, port);
         client.OnMessage += websocket_MessageReceived;

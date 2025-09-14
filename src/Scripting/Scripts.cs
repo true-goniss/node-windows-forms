@@ -13,7 +13,7 @@ public static class Scripts
             clients.add(ws);
 
             console.log(`form connected`);
-            socket = ws;
+
             ws.send(`Welcome, you are connected!`);
             ws.on(`message`, data => {
 
@@ -186,6 +186,6 @@ public static class Scripts
             });
             }
 
-            //module.exports = { wss, socket, getControlProperty }; ";
+         ";
     }
 }
