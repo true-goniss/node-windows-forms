@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using WebSocket4Net;
 
+using static Utils;
 
 
 static class NodeControls
@@ -355,16 +356,7 @@ static class NodeControls
         return port;
     }
 
-    static string getStringTabs(int quan)
-    {
-        string tabs = "";
 
-        for (int i = 1; i < quan; i++)
-        {
-            tabs += "   ";
-        }
-        return tabs;
-    }
 
     /*
     static void AddJS_ControlsIterator()
@@ -903,43 +895,11 @@ return new Promise((resolve, reject) => {
 
 
 
-    static string newLineDouble()
-    {
-        return Environment.NewLine + Environment.NewLine;
-    }
 
-    static string tabSeveralTimesString(int count)
-    {
-        string res = "";
 
-        for (int i = 0; i < count; i++)
-        {
-            res += "    ";
-        }
 
-        return res;
-    }
 
-    static void WriteTextToFile(string filePath, string text, Encoding encoding)
-    {
-        using (StreamWriter writer = new StreamWriter(filePath, false, encoding))
-        {
-            writer.Write(text);
-        }
-    }
 
-    static string DeleteLastSymbol(string input, char symbol)
-    {
-        int lastIndex = input.LastIndexOf(symbol);
-        if (lastIndex >= 0)
-        {
-            return input.Remove(lastIndex, 1);
-        }
-        else
-        {
-            return input;
-        }
-    }
 
     /*
     static private IEnumerable<Component> GetComponentsTimers(Form form)

@@ -27,7 +27,7 @@ Create Windows Forms Project in your Visual Studio. Add controls to your form, i
 <br><br>
 
 ### ```Step 2:```
-In C# code: import class ```NodeControls.cs``` to your project, then in the beginning of your ```Form``` class add line: 
+In C# code: import the contents of the ```src/``` folder to your project, then in the beginning of your ```Form``` class add line: 
 ```csharp
 NodeControls.Generate(this, "null", @"C:\path-to-your-nodejs-project\node-windows-forms");
 ```

@@ -4,3 +4,5 @@ node-windows-forms/tmp/
 script.js
 package.json
 package-lock.json
+.vs
+[tT]rash.cs
