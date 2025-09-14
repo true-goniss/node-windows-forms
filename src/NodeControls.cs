@@ -51,8 +51,8 @@ static class NodeControls
         script += scriptWebsocket(socketPort) + newLineDouble();
 
         script += "const { TextBox, Button, Label, RadioButton, CheckBox, NumericUpDown, TabControl, Panel, TabPage, GroupBox, TrackBar, Form } = require(`./controls`);" + newLineDouble();
-        script += "const { exec } = require('child_process');" + Environment.NewLine;
-        script += "const ExecutablePath = `" + Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\") + "`;" + Environment.NewLine;
+        script += "const { exec } = require('child_process');" + newLine();
+        script += $"const ExecutablePath = `{GetExecutablePath()}`;" + newLine();
 
         script += "const Run = () => { try { ";
         script += "const childProcess = exec(ExecutablePath); ";
@@ -62,9 +62,9 @@ static class NodeControls
         script += "process.on('SIGHUP', (code) => { Exit(); }); ";
         script += "process.on('SIGTERM', (code) => { Exit(); }); } catch(err) {} }; " + newLineDouble();
 
-        usedNames += "Run," + Environment.NewLine;
+        usedNames += "Run," + newLine();
 
-        script += "let variables = [];" + Environment.NewLine;
+        script += "let variables = [];" + newLine();
 
         controls.Add(form.Name, form);
 

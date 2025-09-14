@@ -29,9 +29,14 @@ public static class Utils
         return res;
     }
 
+    public static string newLine()
+    {
+        return Environment.NewLine;
+    }
+
     public static string newLineDouble()
     {
-        return Environment.NewLine + Environment.NewLine;
+        return newLine() + newLine();
     }
 
     public static void WriteTextToFile(string filePath, string text, Encoding encoding)
@@ -53,6 +58,11 @@ public static class Utils
         {
             return input;
         }
+    }
+
+    public static string GetExecutablePath()
+    {
+        return Path.GetFullPath(Application.ExecutablePath).Replace(@"\", @"\\").Replace(@"/", @"\\");
     }
 
     // ----------- controls ----------- //
