@@ -60,39 +60,37 @@ public static class Utils
 
     public static Dictionary<string, Control> TraverseSubControlsWithTag(Control ctrl, string tag)
     {
-        Dictionary<string, Control> controls = new Dictionary<string, Control>();
+        Dictionary<string, Control> controls = new ();
+        TraverseSubControlsWithTagInternal(ctrl, tag, controls);
+        return controls;
+    }
+
+    private static void TraverseSubControlsWithTagInternal(Control ctrl, string tag, Dictionary<string, Control> controls)
+    {
+        if (ctrl == null || controls == null) return;
 
         foreach (Control childCtrl in ctrl.Controls)
         {
-            string controlTag = (childCtrl.Tag == null) ? "null" : childCtrl.Tag.ToString();
+            if (childCtrl == null) continue;
 
-            if (controlTag == tag && childCtrl.Name != "")
+            string controlTag = childCtrl.Tag?.ToString() ?? "null";
+            string controlName = childCtrl.Name ?? string.Empty;
+
+            if (controlTag == tag && !string.IsNullOrEmpty(controlName))
             {
-                try
-                {
-                    controls.Add(childCtrl.Name, childCtrl);
-                }
-                catch (Exception ee) { }
+                if (!controls.ContainsKey(controlName))
+                    controls[controlName] = childCtrl;
             }
 
-            if (childCtrl is System.Windows.Forms.Timer)
+            if (childCtrl is TabControl tabControl)
             {
-                string h = "";
-            }
-
-            if (childCtrl is TabControl)
-            {
-                TabControl tc = childCtrl as TabControl;
-
-                foreach (TabPage tabPage in tc.TabPages)
+                foreach (TabPage tabPage in tabControl.TabPages)
                 {
-                    controls.Concat(TraverseSubControlsWithTag(tabPage, tag));
+                    TraverseSubControlsWithTagInternal(tabPage, tag, controls);
                 }
             }
 
-            controls.Concat(TraverseSubControlsWithTag(childCtrl, tag));
+            TraverseSubControlsWithTagInternal(childCtrl, tag, controls);
         }
-
-        return controls;
     }
 }

@@ -132,7 +132,7 @@ static class CsharpEventHandlers
     {
         NodeControls.ReconnectSocketOnDisconnect();
         //System.Diagnostics.Debug.WriteLine(eventName);
-        NodeControls.websocket.Send("nwfEventEmit: " + (sender as Control).Name + "_" + eventName + "nwfEventArgs:" + eventArgs);
+        NodeControls.SendToSocket("nwfEventEmit: " + (sender as Control).Name + "_" + eventName + "nwfEventArgs:" + eventArgs);
     }
 
 

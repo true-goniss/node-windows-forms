@@ -4,7 +4,8 @@
 
  */
 
-using WebSocket4Net;
+using System.Text;
+using System.Reflection;
 
 using static Utils;
 using static FileSystemFuncs;
@@ -21,9 +22,10 @@ static class NodeControls
     static Dictionary<string, Control> controls;
     static Dictionary<string, string> stringVariables = new Dictionary<string, string>();
 
+    static WebsocketClient client;
+
     public static async void Generate(Form form, string tag, string outputPath)
     {
-        
         controls = TraverseSubControlsWithTag(form, tag);
 
         script = "`use strict`;" + newLineDouble();
@@ -40,7 +42,7 @@ static class NodeControls
 
         FileSystemFuncs.FileWriteInt(socketPortFilePath, socketPort);
 
-        if (websocket == null)
+        if (client == null || client.isInactive())
         {
             initializeWebsocket(socketPort);
         }
@@ -207,6 +209,10 @@ static class NodeControls
         //CsharpEventHandlers.delegatesGenerated
     }
 
+    public static void SendToSocket(string message)
+    {
+        client.Send(message);
+    }
 
     public static bool setStringVariable(string variableName, string value)
     {
@@ -396,10 +402,16 @@ static class NodeControls
 
     public static void ReconnectSocketOnDisconnect()
     {
-        if (websocket == null || (websocket.State != WebSocketState.Open && websocket.State != WebSocketState.Connecting))
+        if (client.isInactive())
         {
             initializeWebsocket(socketPort);
         }
+    }
+
+    static void initializeWebsocket(int port, string ip = "localhost")
+    {
+        client = new WebsocketClient(ip, port);
+        client.OnMessage += websocket_MessageReceived;
     }
 
     static string scriptWebsocket(int port)
@@ -593,54 +605,11 @@ return new Promise((resolve, reject) => {
     }
 
 
-    public static WebSocket websocket = null;
-    static void initializeWebsocket(int port)
+
+
+
+    static async void websocket_MessageReceived(string message)
     {
-        string ip = "localhost";
-
-        websocket = new WebSocket("ws://" + ip + ":" + port + "/");
-
-        websocket.Opened += new EventHandler(websocket_Opened);
-        websocket.MessageReceived += websocket_MessageReceived;
-        websocket.Closed += Websocket_Closed;
-        websocket.Open();
-    }
-
-    static System.Timers.Timer reconnectTimer = null;
-
-    private static void Websocket_Closed(object? sender, EventArgs e)
-    {
-        if (reconnectTimer == null)
-        {
-            reconnectTimer = new System.Timers.Timer(1000);
-            reconnectTimer.Elapsed += ReconnectTimer_Elapsed;
-            reconnectTimer.AutoReset = true;
-            reconnectTimer.Start();
-        }
-
-    }
-
-    private static void ReconnectTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        if (websocket.State == WebSocketState.Connecting || websocket.State == WebSocketState.Open) return;
-
-        try
-        {
-            websocket.Open();
-        }
-        catch (Exception ex) { }
-    }
-
-    static DateTime lastMessageTime;
-
-    static void websocket_Opened(object sender, EventArgs e)
-    {
-        lastMessageTime = DateTime.Now;
-    }
-
-    static async void websocket_MessageReceived(object sender, MessageReceivedEventArgs e)
-    {
-        string message = e.Message.ToString().Trim().Trim();
 
         if (message == "nwfApplicationExit") Environment.Exit(0);
 
@@ -668,7 +637,7 @@ return new Promise((resolve, reject) => {
                         control.Invoke((MethodInvoker)delegate
                         {
                             object returnValue = methodInfo.Invoke(control, null);
-                            websocket.Send(returnValue.ToString());
+                            client.Send(returnValue.ToString());
                         });
                     }
 
@@ -708,7 +677,7 @@ return new Promise((resolve, reject) => {
                                 }
 
                                 propertyValue = enumValue.ToString();
-                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                                client.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                             });
                         }
                         else if (propertyName == "Size")
@@ -717,7 +686,7 @@ return new Promise((resolve, reject) => {
                             {
                                 Size size = (Size)property.GetValue(control);
                                 propertyValue = "{ \"width\": " + size.Width + ", \"height\": " + size.Height + " }";
-                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                                client.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                             });
                         }
                         else if (property.PropertyType.Name == "Point")
@@ -726,7 +695,7 @@ return new Promise((resolve, reject) => {
                             {
                                 Point point = (Point)property.GetValue(control);
                                 propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
-                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                                client.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                             });
                         }
                         else if (property.PropertyType.Name == "Color")
@@ -735,7 +704,7 @@ return new Promise((resolve, reject) => {
                             {
                                 Color color = (Color)property.GetValue(control);
                                 propertyValue = "{ \"a\": " + color.A + ", \"r\": " + color.R + ", \"g\": " + color.G + ", \"b\": " + color.B + " }";
-                                websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                                client.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                             });
                         }
                         else
@@ -745,18 +714,18 @@ return new Promise((resolve, reject) => {
                                 propertyValue = property.GetValue(control).ToString();
                             });
 
-                            websocket.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
+                            client.Send(controlName + "." + propertyName + "nwfPropertyValue:" + propertyValue);
                         }
 
                     }
                     else
                     {
-                        websocket.Send("Property not found");
+                        client.Send("Property not found");
                     }
                 }
                 else
                 {
-                    websocket.Send("Control not found");
+                    client.Send("Control not found");
                 }
             }
 
@@ -768,7 +737,7 @@ return new Promise((resolve, reject) => {
                 if (controls.TryGetValue(controlName, out Control control))
                 {
                     var property = control.GetType().GetProperty(propertyName);
-                    if (property == null) { websocket.Send("Property not found"); return; }
+                    if (property == null) { client.Send("Property not found"); return; }
                     object convertedValue = null;
 
                     string propertyValue = message.Split(':')[2];
@@ -823,7 +792,7 @@ return new Promise((resolve, reject) => {
                 }
                 else
                 {
-                    websocket.Send("Control not found");
+                    client.Send("Control not found");
                 }
             }
 
@@ -831,7 +800,7 @@ return new Promise((resolve, reject) => {
             {
                 string varName = message.Split("nwfGetStrVarName:")[1].Split("nwfGetStrVarVal:")[0];
 
-                websocket.Send("nwfGetStrVarName:"+ varName + "nwfGetStrVarVal:" + getStringVariable(varName));
+                client.Send("nwfGetStrVarName:"+ varName + "nwfGetStrVarVal:" + getStringVariable(varName));
             }
 
             if (message.Contains("nwfSetStrVarName:"))
