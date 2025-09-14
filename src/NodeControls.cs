@@ -179,31 +179,14 @@ static class NodeControls
 
         script = script.Replace("{{eventEmittersJS}}", eventEmittersJS);
 
-        bool accessSuccess = false;
-
-        try
-        {
-            int tries = 1;
-            do
-            {
-                try
-                {
-                    WriteTextToFile(Path.Combine(outputPath, "form.js"), script, Encoding.UTF8);
-                    accessSuccess = true;
-                }
-                catch (Exception ee2)
-                {
-                    tries++; await Task.Delay(1000);
-                }
-            }
-            while (!accessSuccess && tries <= 5);
-        }
-        catch (Exception ee)
-        {
-            MessageBox.Show("NodeControls: error while saving");
-        }
-
-        //if(accessSuccess) MessageBox.Show("NodeControls: nodejs script of controls saved"); 
+        await FileSystemFuncs.WriteFileWithRetries(
+            Path.Combine(outputPath, "form.js"),
+            () => Task.Run(() => WriteTextToFile(Path.Combine(outputPath, "form.js"), script, Encoding.UTF8)),
+            maxRetries: 5,
+            createDirectory: false,
+            showFinalErrorMessage: true,
+            "NodeControls: error while saving"
+        );
 
         //CsharpEventHandlers.delegatesRunnerGenerated
         //CsharpEventHandlers.delegatesGenerated

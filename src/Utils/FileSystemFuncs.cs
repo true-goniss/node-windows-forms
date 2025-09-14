@@ -22,32 +22,59 @@ static class FileSystemFuncs
         }
     }
 
+    // this is bad
     public static async Task<bool> FileWriteInt(string path, int value)
-    {
-        return await FileWriteAllText(path, value.ToString());
+    {        
+        await WriteFileWithRetries(
+            path,
+            () => Task.Run(() => File.WriteAllText(path, value.ToString())),
+            maxRetries: -1,
+            createDirectory: true,
+            showFinalErrorMessage: false
+        );
+
+        return true;
     }
 
-    static async Task<bool> FileWriteAllText(string path, string content)
+    public static async Task<bool> WriteFileWithRetries(
+    string path,
+    Func<Task> writeAction,
+    int maxRetries = -1,
+    bool createDirectory = false,
+    bool showFinalErrorMessage = false,
+    string finalErrorMessage = "",
+    int delayMs = 1000)
     {
-        bool accessSuccess = false;
-        do
+        if (createDirectory)
         {
-            string directory = (new System.IO.DirectoryInfo(path)).Parent.FullName;
-            System.IO.Directory.CreateDirectory(directory);
+            string directory = Path.GetDirectoryName(path);
+            Directory.CreateDirectory(directory);
+        }
 
+        int attempts = 0;
+        while (maxRetries == -1 || attempts < maxRetries)
+        {
             try
             {
-                System.IO.File.WriteAllText(path, content);
-                accessSuccess = true;
+                await writeAction();
+                return true;
             }
-            catch (Exception ex) { await Task.Delay(100); }
+            catch (Exception)
+            {
+                attempts++;
+                await Task.Delay(delayMs);
+            }
         }
-        while (!accessSuccess);
 
-        return accessSuccess;
+        if (showFinalErrorMessage)
+        {
+            MessageBox.Show(finalErrorMessage);
+        }
+        return false;
     }
 
-    static async Task<string> FileReadAllText(string path)
+
+static async Task<string> FileReadAllText(string path)
     {
         if (System.IO.File.Exists(path))
         {
