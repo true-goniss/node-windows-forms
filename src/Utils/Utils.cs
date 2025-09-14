@@ -58,8 +58,9 @@ public static class Utils
     // ----------- controls ----------- //
 
 
-    static Dictionary<string, Control> TraverseSubControlsWithTag(Control ctrl, string tag)
+    public static Dictionary<string, Control> TraverseSubControlsWithTag(Control ctrl, string tag)
     {
+        Dictionary<string, Control> controls = new Dictionary<string, Control>();
 
         foreach (Control childCtrl in ctrl.Controls)
         {
