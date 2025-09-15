@@ -1,16 +1,41 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
+using System.Collections.Concurrent;
 
 static class CsharpEventHandlers
 {
     public static string delegatesGenerated = "";
     public static string delegatesRunnerGenerated = "";
 
-    static string addedEventNames = "";
     static string addedTextboxTextChangedEventNames = "";
     static string eventArgsTypeNames = "";
     static string eventHandlersTypesNames = "";
+
+    private static readonly ConcurrentDictionary<(Type, string), EventInfo> EventInfoCache =
+    new ConcurrentDictionary<(Type, string), EventInfo>();
+
+    private static readonly ConcurrentDictionary<string, byte> AddedEventNames = new ConcurrentDictionary<string, byte>();
+
+    private static readonly Dictionary<string, Func<string, Delegate>> EventHandlerFactories =
+        new Dictionary<string, Func<string, Delegate>>
+        {
+        {"EventHandler", CreateDynamic_EventHandler},
+        {"UICuesEventHandler", CreateDynamic_UICuesEventHandler},
+        {"ControlEventHandler", CreateDynamic_ControlEventHandler},
+        {"DragEventHandler", CreateDynamic_DragEventHandler},
+        {"GiveFeedbackEventHandler", CreateDynamic_GiveFeedbackEventHandler},
+        {"HelpEventHandler", CreateDynamic_HelpEventHandler},
+        {"InvalidateEventHandler", CreateDynamic_InvalidateEventHandler},
+        {"KeyEventHandler", CreateDynamic_KeyEventHandler},
+        {"KeyPressEventHandler", CreateDynamic_KeyPressEventHandler},
+        {"LayoutEventHandler", CreateDynamic_LayoutEventHandler},
+        {"MouseEventHandler", CreateDynamic_MouseEventHandler},
+        {"PaintEventHandler", CreateDynamic_PaintEventHandler},
+        {"PreviewKeyDownEventHandler", CreateDynamic_PreviewKeyDownEventHandler},
+        {"QueryContinueDragEventHandler", CreateDynamic_QueryContinueDragEventHandler},
+        {"CancelEventHandler", CreateDynamic_CancelEventHandler}
+        };
 
     public static string GetEventName(Control control, string eventName)
     {
@@ -30,76 +55,38 @@ static class CsharpEventHandlers
     {
         string fullEventName = GetEventName(control, eventName);
 
-        if (!addedEventNames.Contains(fullEventName))
+        if (!AddedEventNames.TryAdd(fullEventName, 0))
+            return;
+
+        var cacheKey = (control.GetType(), eventName);
+
+        if (!EventInfoCache.TryGetValue(cacheKey, out EventInfo eventInfo))
         {
-            addedEventNames += fullEventName + ";";
-            EventInfo eventInfo = control.GetType().GetEvent(eventName);
+            eventInfo = control.GetType().GetEvent(eventName);
             if (eventInfo != null)
             {
-                if (eventInfo.EventHandlerType.Name.Equals("EventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_EventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("UICuesEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_UICuesEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("ControlEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_ControlEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("DragEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_DragEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("GiveFeedbackEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_GiveFeedbackEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("HelpEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_HelpEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("InvalidateEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_InvalidateEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("KeyEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_KeyEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("KeyPressEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_KeyPressEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("LayoutEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_LayoutEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("MouseEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_MouseEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("PaintEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_PaintEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("PreviewKeyDownEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_PreviewKeyDownEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("QueryContinueDragEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_QueryContinueDragEventHandler(eventName));
-                }
-                else if (eventInfo.EventHandlerType.Name.Equals("CancelEventHandler"))
-                {
-                    eventInfo.AddEventHandler(control, CreateDynamic_CancelEventHandler(eventName));
-                }
-
-                CsharpEventHandlers.GenerateEventHandlerDelegatesString(eventName, eventInfo.EventHandlerType.Name, eventInfo.EventHandlerType.GetMethod("Invoke").GetParameters()[1].ParameterType.Name);
-
+                EventInfoCache[cacheKey] = eventInfo;
             }
+        }
+
+        if (eventInfo == null)
+            return;
+
+        string handlerTypeName = eventInfo.EventHandlerType.Name;
+
+        if (EventHandlerFactories.TryGetValue(handlerTypeName, out var factory))
+        {
+            Delegate handler = factory(eventName);
+            eventInfo.AddEventHandler(control, handler);
+
+            MethodInfo invokeMethod = eventInfo.EventHandlerType.GetMethod("Invoke");
+            string parameterTypeName = invokeMethod.GetParameters()[1].ParameterType.Name;
+
+            CsharpEventHandlers.GenerateEventHandlerDelegatesString(
+                eventName,
+                handlerTypeName,
+                parameterTypeName
+            );
         }
     }
 
