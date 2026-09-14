@@ -1,3 +1,8 @@
+<p align="center">
+    <img src="assets/logo.png" alt="node-windows-forms logo" width="250"
+</p>
+<br/>
+
 # node-windows-forms
 
 Легковесная Node.js обертка для нативных Windows Forms. Создавайте молниеносно быстрые нативные десктопные интерфейсы Windows прямо из Node.js с минимальным потреблением ресурсов.
