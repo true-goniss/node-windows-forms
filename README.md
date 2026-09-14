@@ -1,76 +1,114 @@
 # node-windows-forms
-Lightweight and easy-to-use GUI toolset for node js on windows. Compose your interface in Visual Studio, then use it in Node. Work in progress
 
 
 
-<img src="https://github.com/true-goniss/node-windows-forms/assets/42878452/95731c2d-0ceb-4558-9710-ff5323eb9e37" width=20% height=20%>
+A lightweight Node.js wrapper for native Windows Forms. Build blazing-fast, native Windows desktop GUIs directly from Node.js with virtually zero overhead.
 
-## Available controls:
-```csharp
-Button
-TextBox
-Label
-RadioButton
-CheckBox
-NumericUpDown
-Panel
-TabControl
-GroupBox
-TrackBar
+---
+
+## Why node-windows-forms?
+
+If you want to build a desktop app with Node.js, your default choice is usually Electron. But Electron ships a full Chromium browser, making even a "Hello World" app consume 100+ MB of RAM and hundreds of megabytes of disk space.
+
+**node-windows-forms** solves this by using an isolated C# IPC host. 
+- **Lightweight:** Uses only ~30 MB of RAM.
+- **Native UX:** Access real Windows native controls (System Tray, MessageBox, DataGridView, etc.).
+- **Reliable Architecture:** Node.js communicates with a pre-built C# `.exe` via Named Pipes. No fragile C++ native modules (addons) that break every time you update Node.js!
+- **Zero Config:** The C# host is pre-compiled as a tiny single-file executable. Just `npm install` and go.
+
+## Installation
+
+```bash
+npm install node-windows-forms
 ```
 
-<br><br>
+*Note: The package includes a pre-built .NET 10 Framework-dependent executable. If the end-user doesn't have the .NET Desktop Runtime installed, Windows will safely prompt them to download it on the first run.*
 
-## How to use:
-### ```Step 1:```
-Create Windows Forms Project in your Visual Studio. Add controls to your form, install ```WebSocket4Net``` library from Nuget
-<br><br>
-
-### ```Step 2:```
-In C# code: import the contents of the ```src/``` folder to your project, then in the beginning of your ```Form``` class add line: 
-```csharp
-NodeControls.Generate(this, "null", @"C:\path-to-your-nodejs-project\node-windows-forms");
-```
-Where ```path-to-your-nodejs-project``` is path to your node project, to generate set of controls. In this case, only the controls without any tags will be generated.
-<br><br>
-
-### ```Step 3:```
-Compile C# project and run .exe
-
-### ```Step 4:``` 
-Install 'ws' library via npm. In your javascript code you can use Form controls :
+## Quick Start (Hello World)
 
 ```javascript
-const form = require('./node-windows-forms/form');
+const { WinFormsSession, Form, Button, MessageBox } = require('node-windows-forms');
 
-form.Run();
+async function main() {
+    // 1. Initialize the session
+    const session = new WinFormsSession();
+    await session.start();
 
-form.button1.OnClick(async (eventArgs) => {
+    // 2. Create a Window (Form)
+    const form = new Form(session);
+    form.Text = "My First App";
+    form.Width = 300;
+    form.Height = 200;
 
-    form.textBox2.setText( await form.textBox1.getText() );
+    // 3. Create a Button
+    const btn = new Button(session, form);
+    btn.Text = "Click Me!";
+    btn.Width = 100;
+    btn.Height = 40;
+    btn.Left = 90;
+    btn.Top = 50;
 
-    console.log(eventArgs);
+    // 4. Listen to events
+    btn.OnClick.Attach(() => {
+        MessageBox.show(session, "Hello from Node.js!", "Success", "OK", "Information");
+    });
+
+    // 5. Show the window
+    await form.show();
+}
+
+main().catch(console.error);
+```
+
+## Features
+
+- **Standard Controls:** `Form`, `Button`, `TextBox`, `Label`, `ComboBox`, `CheckBox`, `Panel`, `FlowLayoutPanel`, `ListBox`, `PictureBox`, `ProgressBar`, `TabControl`.
+- **Advanced Controls:** `DataGridView` (Bidirectional data access), `MenuStrip`, `ContextMenuStrip`.
+- **System Tray:** `NotifyIcon` allows your Node.js apps to live silently in the taskbar.
+- **Native Dialogs:** `MessageBox`, `OpenFileDialog`, `SaveFileDialog`, `FolderBrowserDialog`.
+
+## System Tray Example
+
+```javascript
+const { WinFormsSession, NotifyIcon, ContextMenuStrip, Form } = require('node-windows-forms');
+
+async function run() {
+    const session = new WinFormsSession();
+    await session.start();
+
+    // Create a tray icon
+    const trayIcon = new NotifyIcon(session);
+    trayIcon.Text = "My Node.js App";
+    trayIcon.Icon = "default"; 
+    trayIcon.Visible = true;
+
+    // Add a right-click menu
+    const contextMenu = new ContextMenuStrip(session);
+    const exitItem = contextMenu.addMenuItem("Exit");
     
-});
+    exitItem.OnClick.Attach(() => {
+        trayIcon.Visible = false;
+        session.stop();
+        process.exit(0);
+    });
 
-form.numericUpDown1.OnValueChanged(async () => {
+    trayIcon.ContextMenuStrip = contextMenu.id;
+}
 
-    const numberValue = await form.numericUpDown1.getValue();
-    form.textBox1.setText( numberValue.toString() );
+run();
+```
 
-    console.log(await form.textBox1.Focus());
+## How it works
 
-});
+1. When you call `new WinFormsSession().start()`, Node.js spawns a lightweight, pre-compiled C# application (`node-windows-forms.exe`).
+2. Node.js generates a unique Named Pipe and passes it to the C# process.
+3. Node.js sends JSON commands over the pipe to create components (`{"action": "create", "type": "Button", ...}`).
+4. The C# process renders the actual native WinForms components.
+5. When a user clicks a button, C# sends a JSON event back to Node.js.
 
-form.Form1.OnClick(async () => {
+## License
 
-    const r = getRandomNumber(50, 255);
-    const g = getRandomNumber(50, 255);
-    const b = getRandomNumber(50, 255);
+ISC License.
 
-    form.Form1.setBackColor(255, r, g, b );
-    form.Form1.setText(`form color ${r} ${g} ${b}`);
-
-});
-
-function getRandomNumber(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+---
+> 🇷🇺 **Русская версия:** [README.ru.md](README.ru.md)

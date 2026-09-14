@@ -1,8 +1,3 @@
-﻿/*
-
- (с) gon_iss  2o24
-
- */
 
 using System.Text;
 using System.Reflection;
@@ -429,7 +424,7 @@ static class NodeControls
 
                     if (value == "" || value == "null")
                     {
-                        control.Invoke((MethodInvoker)delegate
+                        control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                         {
                             object returnValue = methodInfo.Invoke(control, null);
                             client.Send(returnValue.ToString());
@@ -438,7 +433,7 @@ static class NodeControls
 
                     if(controlType.Name == "TextBox" && methodName == "AppendText")
                     {
-                        control.Invoke((MethodInvoker)delegate
+                        control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                         {
                             object returnValue = methodInfo.Invoke(control, new string[] { value });
                         });
@@ -460,7 +455,7 @@ static class NodeControls
 
                         if (property.PropertyType.IsEnum)
                         {
-                            control.Invoke((MethodInvoker)delegate
+                            control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                             {
                                 object enumValue = property.GetValue(control);
 
@@ -477,7 +472,7 @@ static class NodeControls
                         }
                         else if (propertyName == "Size")
                         {
-                            control.Invoke((MethodInvoker)delegate
+                            control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                             {
                                 Size size = (Size)property.GetValue(control);
                                 propertyValue = "{ \"width\": " + size.Width + ", \"height\": " + size.Height + " }";
@@ -486,7 +481,7 @@ static class NodeControls
                         }
                         else if (property.PropertyType.Name == "Point")
                         {
-                            control.Invoke((MethodInvoker)delegate
+                            control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                             {
                                 Point point = (Point)property.GetValue(control);
                                 propertyValue = "{ \"x\": " + point.X + ", \"y\": " + point.Y + ", \"isEmpty\": " + point.IsEmpty.ToString().ToLower() + " }";
@@ -495,7 +490,7 @@ static class NodeControls
                         }
                         else if (property.PropertyType.Name == "Color")
                         {
-                            control.Invoke((MethodInvoker)delegate
+                            control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                             {
                                 Color color = (Color)property.GetValue(control);
                                 propertyValue = "{ \"a\": " + color.A + ", \"r\": " + color.R + ", \"g\": " + color.G + ", \"b\": " + color.B + " }";
@@ -504,7 +499,7 @@ static class NodeControls
                         }
                         else
                         {
-                            control.Invoke((MethodInvoker)delegate
+                            control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                             {
                                 propertyValue = property.GetValue(control).ToString();
                             });
@@ -579,7 +574,7 @@ static class NodeControls
                         convertedValue = Convert.ChangeType(propertyValue, property.PropertyType);
                     }
 
-                    control.Invoke((MethodInvoker)delegate
+                    control.Invoke((System.Windows.Forms.MethodInvoker)delegate
                     {
                         // Convert propertyValue to the appropriate type if needed
                         property.SetValue(control, convertedValue);
