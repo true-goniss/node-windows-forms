@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/logo.png" alt="node-windows-forms logo" width="250"
+    <img src="https://raw.githubusercontent.com/true-goniss/node-windows-forms/main/assets/logo.png" alt="node-windows-forms logo" width="250"
 </p>
 <br/>
 
