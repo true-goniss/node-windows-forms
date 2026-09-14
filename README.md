@@ -1,3 +1,8 @@
+<p align="center">
+    <img src="assets/logo.png" alt="node-windows-forms logo" width="250"
+</p>
+<br/>
+    
 # node-windows-forms
 
 
