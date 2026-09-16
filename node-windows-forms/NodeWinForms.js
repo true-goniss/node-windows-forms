@@ -12,7 +12,22 @@ class WinFormsSession extends EventEmitter {
             this.executablePath = options; // For backwards compatibility
         } else {
             const path = require('path');
-            const defaultPath = path.join(__dirname, '..', 'bin', 'node-windows-forms.exe');
+            const fs = require('fs');
+            
+            const possiblePaths = [
+                path.join(__dirname, '..', 'bin', 'node-windows-forms.exe'),
+                path.join(__dirname, 'node-windows-forms.exe'),
+                path.join(__dirname, 'bin', 'node-windows-forms.exe')
+            ];
+            
+            let defaultPath = possiblePaths[0];
+            for (const p of possiblePaths) {
+                if (fs.existsSync(p)) {
+                    defaultPath = p;
+                    break;
+                }
+            }
+            
             this.executablePath = options?.executablePath || defaultPath;
             this.pipeName = options?.pipeName;
         }
@@ -37,7 +52,14 @@ class WinFormsSession extends EventEmitter {
                 });
                 
                 this.process.on('close', (code) => this.emit('exit', code));
-                this.process.on('error', (err) => reject(err));
+                this.process.on('error', (err) => {
+                    if (err.code === 'ENOENT') {
+                        const customErr = new Error(`Cannot find the C# executable at ${this.executablePath}.\nIf you are running from the source repository, please build the C# project first (e.g. 'dotnet build').`);
+                        customErr.code = 'ENOENT';
+                        return reject(customErr);
+                    }
+                    reject(err);
+                });
                 
                 // Give the C# process a moment to start the named pipe server
                 setTimeout(() => this._connectPipe(pipeId, resolve, reject), 500);
