@@ -1,8 +1,10 @@
 node_modules/
+src/bin/
+src/obj/
+bin/
+dist/
 node-windows-forms/form.js
 node-windows-forms/tmp/
 script.js
-package.json
-package-lock.json
 .vs
 [tT]rash.cs

@@ -1,0 +1,37 @@
+{
+  "name": "node-windows-forms",
+  "version": "1.0.3",
+  "description": "A lightweight Node.js wrapper for native Windows Forms via IPC.",
+  "main": "node-windows-forms/index.js",
+  "bin": {
+    "nwf-build": "cli/build.js"
+  },
+  "types": "node-windows-forms/index.d.ts",
+  "license": "ISC",
+  "files": [
+    "cli",
+    "bin",
+    "node-windows-forms",
+    "assets"
+  ],
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "winforms",
+    "gui",
+    "desktop",
+    "windows",
+    "native",
+    "ipc",
+    "ui"
+  ],
+  "author": "",
+  "type": "commonjs",
+  "dependencies": {
+    "esbuild": "^0.28.2",
+    "postject": "^1.0.0-alpha.6",
+    "resedit": "^3.1.0",
+    "uuid": "^14.0.2"
+  }
+}

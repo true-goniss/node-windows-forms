@@ -5,7 +5,9 @@
     
 # node-windows-forms
 
-
+[![npm version](https://img.shields.io/npm/v/node-windows-forms.svg)](https://www.npmjs.com/package/node-windows-forms)
+[![npm downloads](https://img.shields.io/npm/dm/node-windows-forms.svg)](https://www.npmjs.com/package/node-windows-forms)
+[![License](https://img.shields.io/npm/l/node-windows-forms.svg)](https://www.npmjs.com/package/node-windows-forms)
 
 A lightweight Node.js wrapper for native Windows Forms. Build blazing-fast, native Windows desktop GUIs directly from Node.js with virtually zero overhead.
 
@@ -103,9 +105,25 @@ async function run() {
 run();
 ```
 
+## Building a Standalone Executable
+
+You can compile your Node.js application into a single native `.exe` file using the built-in CLI tool. The resulting executable is completely standalone and contains the Node.js runtime and your code inside it. You can easily set a custom executable name and icon:
+
+```bash
+npx nwf-build app.js -o MyApp.exe -i icon.ico
+```
+
+**Options:**
+- `-o, --output` : The output executable name.
+- `-i, --icon` : Path to an `.ico` file to attach to the final executable.
+
+The builder leverages native Node.js SEA (Single Executable Applications) combined with a custom PE-patcher, meaning you don't need any third-party archivers or bundlers.
+
+
 ## How it works
 
 1. When you call `new WinFormsSession().start()`, Node.js spawns a lightweight, pre-compiled C# application (`node-windows-forms.exe`).
+	 *(If built with `nwf-build`, this C# binary is embedded directly into your JavaScript bundle as a base64 string and extracted into a temporary directory automatically at runtime).*
 2. Node.js generates a unique Named Pipe and passes it to the C# process.
 3. Node.js sends JSON commands over the pipe to create components (`{"action": "create", "type": "Button", ...}`).
 4. The C# process renders the actual native WinForms components.

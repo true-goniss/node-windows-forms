@@ -5,6 +5,10 @@
 
 # node-windows-forms
 
+[![npm version](https://img.shields.io/npm/v/node-windows-forms.svg)](https://www.npmjs.com/package/node-windows-forms)
+[![npm downloads](https://img.shields.io/npm/dm/node-windows-forms.svg)](https://www.npmjs.com/package/node-windows-forms)
+[![License](https://img.shields.io/npm/l/node-windows-forms.svg)](https://www.npmjs.com/package/node-windows-forms)
+
 Легковесная Node.js обертка для нативных Windows Forms. Создавайте молниеносно быстрые нативные десктопные интерфейсы Windows прямо из Node.js с минимальным потреблением ресурсов.
 
 ---
@@ -101,9 +105,24 @@ async function run() {
 run();
 ```
 
+## Сборка в один исполняемый файл (.exe)
+
+Вы можете скомпилировать ваше Node.js приложение в один нативный файл `.exe` используя встроенную CLI утилиту. Итоговый файл является полностью самостоятельным (standalone) и содержит внутри себя среду выполнения Node.js и ваш скрипт. Вы также можете задать собственное имя процессу и иконку приложению:
+
+```bash
+npx nwf-build app.js -o MyApp.exe -i icon.ico
+```
+
+**Опции:**
+- `-o, --output` : Имя выходного исполняемого файла.
+- `-i, --icon` : Путь к файлу `.ico`, который будет установлен в качестве иконки приложения.
+
+Сборщик использует нативный механизм Node.js SEA (Single Executable Applications) в связке с кастомным патчером PE-заголовков. Это означает, что вам больше не нужны сторонние архиваторы и упаковщики.
+
 ## Как это работает под капотом
 
 1. Когда вы вызываете `new WinFormsSession().start()`, Node.js запускает легковесное, прекомпилированное C# приложение (`node-windows-forms.exe`).
+	 *(При использовании `nwf-build`, этот бинарник кодируется в base64 и "вшивается" напрямую в ваш итоговый `.exe`, а при запуске автоматически распаковывается во временную папку ОС).*
 2. Node.js генерирует уникальный Named Pipe (именованный канал) и передает его в C# процесс.
 3. Node.js отправляет JSON-команды через этот канал для создания компонентов (`{"action": "create", "type": "Button", ...}`).
 4. C# процесс моментально отрисовывает настоящие нативные WinForms компоненты.
