@@ -303,6 +303,12 @@ Object.defineProperty(Control.prototype, 'OnClick',
 Object.defineProperty(Control.prototype, 'OnKeyDown', 
     Control.prototype._createEventHandlerGetter('KeyDown'));
 
+Object.defineProperty(Control.prototype, 'OnKeyUp', 
+    Control.prototype._createEventHandlerGetter('KeyUp'));
+
+Object.defineProperty(Control.prototype, 'OnKeyPress', 
+    Control.prototype._createEventHandlerGetter('KeyPress'));
+
 Object.defineProperty(Control.prototype, 'OnTextChanged', 
     Control.prototype._createEventHandlerGetter('TextChanged'));
 

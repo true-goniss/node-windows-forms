@@ -1,11 +1,4 @@
-let uuidv4;
-
-try {
-    const uuidLib = require('uuid');
-    uuidv4 = uuidLib.v4;
-} catch (e) {
-    uuidv4 = require('uuidv4').uuid || require('uuidv4'); 
-}
+const { v4: uuidv4 } = require('uuid');
 
 const getId = () => {
     return uuidv4();

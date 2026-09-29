@@ -106,6 +106,35 @@ namespace NodeWindowsForms.Core
                 });
             }
 
+            // --- KeyEventHandler ---
+            if (eventHandlerType == typeof(KeyEventHandler))
+            {
+                return new KeyEventHandler((sender, e) =>
+                {
+                    IpcHost.SendEvent(targetId, eventName, new
+                    {
+                        KeyCode = e.KeyCode.ToString(),
+                        KeyValue = e.KeyValue,
+                        Modifiers = e.Modifiers.ToString(),
+                        Alt = e.Alt,
+                        Control = e.Control,
+                        Shift = e.Shift
+                    });
+                });
+            }
+
+            // --- KeyPressEventHandler ---
+            if (eventHandlerType == typeof(KeyPressEventHandler))
+            {
+                return new KeyPressEventHandler((sender, e) =>
+                {
+                    IpcHost.SendEvent(targetId, eventName, new
+                    {
+                        KeyChar = e.KeyChar.ToString()
+                    });
+                });
+            }
+
             // --- FormClosedEventHandler ---
             if (eventHandlerType == typeof(FormClosedEventHandler))
             {

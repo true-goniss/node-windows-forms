@@ -14,11 +14,18 @@ class WinFormsSession extends EventEmitter {
             const path = require('path');
             const fs = require('fs');
             
-            const possiblePaths = [
-                path.join(__dirname, '..', 'bin', 'node-windows-forms.exe'),
-                path.join(__dirname, 'node-windows-forms.exe'),
-                path.join(__dirname, 'bin', 'node-windows-forms.exe')
-            ];
+            const binName = process.env.NWF_BIN_NAME || 'node-windows-forms.exe';
+            let possiblePaths = [];
+            
+            if (path.isAbsolute(binName)) {
+                possiblePaths = [binName];
+            } else {
+                possiblePaths = [
+                    path.join(__dirname, '..', 'bin', binName),
+                    path.join(__dirname, binName),
+                    path.join(__dirname, 'bin', binName)
+                ];
+            }
             
             let defaultPath = possiblePaths[0];
             for (const p of possiblePaths) {
