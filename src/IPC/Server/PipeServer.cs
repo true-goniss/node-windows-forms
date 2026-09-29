@@ -118,11 +118,8 @@ public class PipeServer
 
 					session.LastHeartbeat = DateTime.UtcNow;
 
-					_ = Task.Run(() =>
-					{
-						try { OnMessageReceived?.Invoke(clientId, msg); }
-						catch { /* ignore */ }
-					});
+					try { OnMessageReceived?.Invoke(clientId, msg); }
+					catch { /* ignore */ }
 				}
 			}
 		}

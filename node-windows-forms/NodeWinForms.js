@@ -45,6 +45,7 @@ class WinFormsSession extends EventEmitter {
         this.existingControlsByName = {}; 
         this.protocol = null;
         this._startResolve = null;
+        this._batchQueue = null;
     }
 
     start() {
@@ -136,21 +137,55 @@ class WinFormsSession extends EventEmitter {
             payload: args 
         };
         
-        this.protocol.send(packet);
+        if (!this._batchQueue) {
+            this._batchQueue = [];
+            process.nextTick(() => this._flushBatch());
+        }
+        
+        this._batchQueue.push(packet);
+
+        // Auto-flush if batch gets too large to prevent IPC explosion
+        if (this._batchQueue.length >= 500) {
+            this._flushBatch();
+        }
 
         return new Promise((resolve, reject) => {
-            this.pendingRequests.set(requestId, { resolve, reject });
-            
-            const timeoutMs = options.timeout !== undefined ? options.timeout : 5000;
+            let timer = null;
+            const timeoutMs = options.timeout !== undefined ? options.timeout : 30000;
             if (timeoutMs > 0) {
-                setTimeout(() => {
+                timer = setTimeout(() => {
                     if (this.pendingRequests.has(requestId)) {
                         this.pendingRequests.delete(requestId);
                         reject(new Error(`Timeout waiting for response to ${action}`));
                     }
                 }, timeoutMs);
+                // Allow the process to exit even if this timer is active
+                timer.unref();
             }
+            
+            this.pendingRequests.set(requestId, { resolve, reject, timer });
         });
+    }
+
+    _flushBatch() {
+        if (!this._batchQueue || this._batchQueue.length === 0) return;
+        const batch = this._batchQueue;
+        this._batchQueue = null;
+
+        if (batch.length === 1) {
+            // Send single message normally to save overhead
+            this.protocol.send(batch[0]);
+        } else {
+            // Send as batch
+            const batchPacket = {
+                id: getId(),
+                type: 1, // Command
+                targetId: 'system',
+                action: 'batch',
+                payload: batch
+            };
+            this.protocol.send(batchPacket);
+        }
     }
 
     _handleMessage(rawMsg) {
@@ -175,8 +210,11 @@ class WinFormsSession extends EventEmitter {
                 const req = this.pendingRequests.get(id);
                 if (req) {
                     this.pendingRequests.delete(id);
+                    if (req.timer) clearTimeout(req.timer);
                     if (type === 4 || type === 'error') req.reject(new Error(payload));
                     else req.resolve(payload);
+                } else {
+                    // console.log(`[Node] Received response for unknown ID ${id}: ${payload}`);
                 }
             } 
             // Event = 3

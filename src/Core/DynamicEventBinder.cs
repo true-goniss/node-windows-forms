@@ -2,9 +2,61 @@ using System;
 using System.Reflection;
 using System.Windows.Forms;
 using NodeWindowsForms.Core;
+using System.Threading;
 
 namespace NodeWindowsForms.Core
 {
+    public class Throttler
+    {
+        private DateTime _lastFired = DateTime.MinValue;
+        private readonly int _throttleMs;
+        private readonly Action<object> _action;
+        private System.Threading.Timer _timer;
+        private object _lastState;
+        private readonly object _lock = new object();
+
+        public Throttler(int throttleMs, Action<object> action)
+        {
+            _throttleMs = throttleMs;
+            _action = action;
+        }
+
+        public void Invoke(object state)
+        {
+            lock (_lock)
+            {
+                _lastState = state;
+                var now = DateTime.UtcNow;
+                var elapsed = (now - _lastFired).TotalMilliseconds;
+
+                if (elapsed >= _throttleMs)
+                {
+                    _lastFired = now;
+                    _action(state);
+                }
+                else
+                {
+                    if (_timer == null)
+                    {
+                        var remaining = _throttleMs - (int)elapsed;
+                        _timer = new System.Threading.Timer(OnTimer, null, remaining, Timeout.Infinite);
+                    }
+                }
+            }
+        }
+
+        private void OnTimer(object state)
+        {
+            lock (_lock)
+            {
+                _timer?.Dispose();
+                _timer = null;
+                _lastFired = DateTime.UtcNow;
+                _action(_lastState);
+            }
+        }
+    }
+
     public static class DynamicEventBinder
     {
         public static void AddIpcEventHandler(object target, string eventName, string targetId)
@@ -28,11 +80,14 @@ namespace NodeWindowsForms.Core
             {
                 if (eventName == "TextChanged")
                 {
+                    // Debouncing/Throttling TextChanged is usually not desired for precise input tracking, 
+                    // but we can throttle it to ~16ms (1 frame) to avoid crazy fast pasting spikes.
+                    var textThrottler = new Throttler(16, (state) => IpcHost.SendEvent(targetId, eventName, state));
                     return new EventHandler((sender, e) =>
                     {
                         string val = "";
                         if (sender is Control ctrl) val = ctrl.Text;
-                        IpcHost.SendEvent(targetId, eventName, new { Type = e.GetType().Name, value = val });
+                        textThrottler.Invoke(new { Type = e.GetType().Name, value = val });
                     });
                 }
                 
@@ -61,11 +116,13 @@ namespace NodeWindowsForms.Core
                 
                 if (eventName == "Resize" || eventName == "SizeChanged")
                 {
+                    // Resize fires extremely rapidly during window drag. Throttle to 32ms (~30fps)
+                    var resizeThrottler = new Throttler(32, (state) => IpcHost.SendEvent(targetId, eventName, state));
                     return new EventHandler((sender, e) =>
                     {
                         if (sender is Control ctrl)
                         {
-                            IpcHost.SendEvent(targetId, eventName, new { Type = e.GetType().Name, width = ctrl.Width, height = ctrl.Height });
+                            resizeThrottler.Invoke(new { Type = e.GetType().Name, width = ctrl.Width, height = ctrl.Height });
                         }
                     });
                 }
@@ -80,9 +137,24 @@ namespace NodeWindowsForms.Core
             // --- MouseEventHandler (object sender, MouseEventArgs e) ---
             if (eventHandlerType == typeof(MouseEventHandler))
             {
+                if (eventName == "MouseMove")
+                {
+                    // MouseMove is the biggest offender for IPC flooding. Throttle to 16ms (~60fps)
+                    var mouseThrottler = new Throttler(16, (state) => IpcHost.SendEvent(targetId, eventName, state));
+                    return new MouseEventHandler((sender, e) =>
+                    {
+                        mouseThrottler.Invoke(new
+                        {
+                            Location = new { X = e.X, Y = e.Y },
+                            Button = e.Button.ToString(),
+                            Clicks = e.Clicks,
+                            Delta = e.Delta
+                        });
+                    });
+                }
+
                 return new MouseEventHandler((sender, e) =>
                 {
-                    // Send mouse event details
                     IpcHost.SendEvent(targetId, eventName, new
                     {
                         Location = new { X = e.X, Y = e.Y },

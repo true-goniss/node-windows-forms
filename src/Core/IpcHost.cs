@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading.Channels;
 
 namespace NodeWindowsForms.Core
 {
@@ -15,8 +16,9 @@ namespace NodeWindowsForms.Core
         // Make IpcHost a static instance so we can easily call SendEvent from anywhere
         public static IpcHost Instance { get; private set; }
 
+        private readonly Channel<(string clientId, PipeMessage msg)> _messageQueue = Channel.CreateUnbounded<(string clientId, PipeMessage msg)>();
         private readonly bool _isSpawnMode;
-        
+
         public IpcHost(Form mainForm, string pipeName, bool isSpawnMode = false)
         {
             ObjectStore.RegisterStartForm(mainForm);
@@ -29,6 +31,15 @@ namespace NodeWindowsForms.Core
             _pipeServer.OnMessageReceived += OnMessageReceived;
             
             Instance = this;
+            _ = ProcessMessageQueueAsync();
+        }
+
+        private async Task ProcessMessageQueueAsync()
+        {
+            await foreach (var item in _messageQueue.Reader.ReadAllAsync())
+            {
+                await HandleMessageAsync(item.clientId, item.msg);
+            }
         }
 
         private void OnClientDisconnected(string clientId)
@@ -59,13 +70,57 @@ namespace NodeWindowsForms.Core
             await _pipeServer.SendToClientAsync(clientId, readyMsg);
         }
 
-        private async void OnMessageReceived(string clientId, PipeMessage msg)
+        private void OnMessageReceived(string clientId, PipeMessage msg)
+        {
+            // Enqueue synchronously. 
+            // Since PipeServer now invokes this synchronously without Task.Run, 
+            // order is strictly preserved.
+            _messageQueue.Writer.TryWrite((clientId, msg));
+        }
+
+        private async Task HandleMessageAsync(string clientId, PipeMessage msg)
         {
             try
             {
                 // Process only Command type (1)
                 if (msg.Type != MessageType.Command) return;
 
+                if (msg.Action == "batch")
+                {
+                    JsonElement batchElement = default;
+                    if (msg.Payload is JsonElement be) batchElement = be;
+                    else if (msg.Payload != null) batchElement = JsonSerializer.SerializeToElement(msg.Payload);
+
+                    if (batchElement.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var item in batchElement.EnumerateArray())
+                        {
+                            try {
+                                var subMsg = JsonSerializer.Deserialize<PipeMessage>(item.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                if (subMsg != null)
+                                {
+                                    await ProcessSingleCommandAsync(clientId, subMsg);
+                                }
+                            } catch (Exception ex) {
+                                Console.WriteLine($"Error deserializing subMsg: {ex.Message}");
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                await ProcessSingleCommandAsync(clientId, msg);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Batch error: {ex.Message}");
+            }
+        }
+
+        private async Task ProcessSingleCommandAsync(string clientId, PipeMessage msg)
+        {
+            try
+            {
                 JsonElement argsElement = default;
                 if (msg.Payload is JsonElement je) {
                     argsElement = je;
