@@ -119,6 +119,33 @@ npx nwf-build app.js -o MyApp.exe -i icon.ico
 
 The builder leverages native Node.js SEA (Single Executable Applications) combined with a custom PE-patcher, meaning you don't need any third-party archivers or bundlers.
 
+## Attach Mode (Visual Studio Integration)
+
+You can build your UI visually in Visual Studio using the Windows Forms Designer and then attach Node.js to it. To do this, your C# project needs access to the IPC host classes.
+
+1. Add the required core library files to your C# project. You can do this by linking the `src/Core/` and `src/IPC/` folders in your `.csproj` file:
+   ```xml
+   <ItemGroup>
+     <Compile Include="path\to\node-windows-forms\src\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+     <Compile Include="path\to\node-windows-forms\src\IPC\**\*.cs" Link="IPC\%(RecursiveDir)%(Filename)%(Extension)" />
+   </ItemGroup>
+   ```
+2. In your C# project, start the IPC host with a known pipe name instead of letting Node spawn it:
+   ```csharp
+   // Program.cs
+   var host = new NodeWindowsForms.Core.IpcHost(mainForm, "MyCustomPipeName", isSpawnMode: false);
+   host.StartLoop();
+   Application.Run(mainForm);
+   ```
+3. Run your compiled C# application (e.g. from Visual Studio).
+4. In Node.js, connect to the running application using the same pipe name:
+   ```javascript
+   const session = new WinFormsSession({ pipeName: 'MyCustomPipeName' });
+   const controls = await session.start();
+   
+   // Access controls created in Visual Studio Designer
+   controls.Form1.Text = "Attached to Node.js!";
+   ```
 
 ## How it works
 
