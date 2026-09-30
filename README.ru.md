@@ -119,6 +119,34 @@ npx nwf-build app.js -o MyApp.exe -i icon.ico
 
 Сборщик использует нативный механизм Node.js SEA (Single Executable Applications) в связке с кастомным патчером PE-заголовков. Это означает, что вам больше не нужны сторонние архиваторы и упаковщики.
 
+## Режим присоединения (Attach Mode / Visual Studio)
+
+Вы можете собрать визуальный интерфейс в Visual Studio с помощью визуального дизайнера (Windows Forms Designer) и затем подключить к нему управляющую логику на Node.js. Для этого вашему C# проекту потребуется доступ к классам IPC-хоста.
+
+1. Добавьте необходимые файлы библиотеки в ваш C# проект. Это можно сделать, подключив папки `src/Core/` и `src/IPC/` в вашем файле `.csproj`:
+   ```xml
+   <ItemGroup>
+     <Compile Include="путь\к\node-windows-forms\src\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+     <Compile Include="путь\к\node-windows-forms\src\IPC\**\*.cs" Link="IPC\%(RecursiveDir)%(Filename)%(Extension)" />
+   </ItemGroup>
+   ```
+2. В вашем C# проекте запустите IPC-хост с заранее заданным именем канала (pipe), вместо того чтобы Node запускал новый процесс:
+   ```csharp
+   // Program.cs
+   var host = new NodeWindowsForms.Core.IpcHost(mainForm, "MyCustomPipeName", isSpawnMode: false);
+   host.StartLoop();
+   Application.Run(mainForm);
+   ```
+3. Запустите ваше скомпилированное C# приложение (например, из Visual Studio).
+4. В Node.js подключитесь к уже запущенному C# приложению по тому же имени канала:
+   ```javascript
+   const session = new WinFormsSession({ pipeName: 'MyCustomPipeName' });
+   const controls = await session.start();
+   
+   // Получаем доступ к компонентам, заранее созданным в дизайнере Visual Studio
+   controls.Form1.Text = "Управляется из Node.js!";
+   ```
+
 ## Как это работает под капотом
 
 1. Когда вы вызываете `new WinFormsSession().start()`, Node.js запускает легковесное, прекомпилированное C# приложение (`node-windows-forms.exe`).
