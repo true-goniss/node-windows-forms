@@ -1,6 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { WinFormsSession, Form, Button, Label, TextBox, ListBox, Panel } = require('../node-windows-forms');
+let nodeWinForms;
+try {
+    nodeWinForms = require('../node-windows-forms');
+} catch (e) {
+    nodeWinForms = require('node-windows-forms');
+}
+const { WinFormsSession, Form, Button, Label, TextBox, ListBox, Panel } = nodeWinForms;
 
 async function run() {
     console.log("Starting File Manager Demo...");

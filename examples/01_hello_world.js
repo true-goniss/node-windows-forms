@@ -1,4 +1,10 @@
-const { WinFormsSession, Form, Button, MessageBox } = require('../node-windows-forms');
+let nodeWinForms;
+try {
+    nodeWinForms = require('../node-windows-forms');
+} catch (e) {
+    nodeWinForms = require('node-windows-forms');
+}
+const { WinFormsSession, Form, Button, MessageBox } = nodeWinForms;
 
 async function run() {
     console.log("Starting node-windows-forms Hello World...");

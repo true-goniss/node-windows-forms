@@ -1,5 +1,11 @@
 const assert = require('assert');
-const { WinFormsSession, Form, Button, Label, TextBox, MessageBox } = require('../node-windows-forms');
+let nodeWinForms;
+try {
+    nodeWinForms = require('../node-windows-forms');
+} catch (e) {
+    nodeWinForms = require('node-windows-forms');
+}
+const { WinFormsSession, Form, Button, Label, TextBox, MessageBox } = nodeWinForms;
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 

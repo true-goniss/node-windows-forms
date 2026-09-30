@@ -1,3 +1,9 @@
+let nodeWinForms;
+try {
+    nodeWinForms = require('../node-windows-forms');
+} catch (e) {
+    nodeWinForms = require('node-windows-forms');
+}
 const {
     WinFormsSession,
     Form,
@@ -6,7 +12,7 @@ const {
     ContextMenuStrip,
     MenuStrip,
     DataGridView
-} = require('../node-windows-forms');
+} = nodeWinForms;
 
 async function run() {
     const session = new WinFormsSession();
