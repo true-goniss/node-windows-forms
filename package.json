@@ -1,6 +1,6 @@
 {
   "name": "node-windows-forms",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A lightweight Node.js wrapper for native Windows Forms via IPC.",
   "main": "node-windows-forms/index.js",
   "bin": {
@@ -26,6 +26,10 @@
     "ipc",
     "ui"
   ],
+	"repository": {
+	"type": "git",
+	"url": "git+https://github.com/true-goniss/node-windows-forms"
+  },
   "author": "",
   "type": "commonjs",
   "dependencies": {
