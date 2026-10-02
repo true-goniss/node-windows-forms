@@ -16,10 +16,11 @@ A lightweight Node.js wrapper for native Windows Forms. Build blazing-fast, nati
 ## Why node-windows-forms?
 
 If you want to build a desktop app with Node.js, your default choice is usually Electron. But Electron ships a full Chromium browser, making even a "Hello World" app consume 100+ MB of RAM and hundreds of megabytes of disk space.
+Furthermore, you are probably **tired** of new UI frameworks emerging every month and constant breaking changes. **You just want your simple utility to have buttons.**
 
 **node-windows-forms** solves this by using an isolated C# IPC host. 
 - **Lightweight:** Uses only ~30 MB of RAM.
-- **Native UX:** Access real Windows native controls (System Tray, MessageBox, DataGridView, etc.).
+- **Native UX:** Access real Windows native controls (System Tray, MessageBox, DataGridView, etc.). Just like before the browser era. No HTML/CSS wrestling or complexity.
 - **Reliable Architecture:** Node.js communicates with a pre-built C# `.exe` via Named Pipes. No fragile C++ native modules (addons) that break every time you update Node.js!
 - **Zero Config:** The C# host is pre-compiled as a tiny single-file executable. Just `npm install` and go.
 
