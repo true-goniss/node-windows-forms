@@ -92,6 +92,12 @@ declare module "node-windows-forms" {
         OnCheckedChanged: EventCallback<{ value: boolean }>;
     }
 
+    export class RadioButton extends Control {
+        constructor(session: WinFormsSession, parent?: Control);
+        Checked: boolean;
+        OnCheckedChanged: EventCallback<{ value: boolean }>;
+    }
+
     export class ComboBox extends Control {
         constructor(session: WinFormsSession, parent?: Control);
         SelectedIndex: number;

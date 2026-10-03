@@ -8,6 +8,7 @@ const NumericUpDown = require('./controls/NumericUpDown');
 const Label = require('./controls/Label');
 const ComboBox = require('./controls/ComboBox');
 const CheckBox = require('./controls/CheckBox');
+const RadioButton = require('./controls/RadioButton');
 const Panel = require('./controls/Panel');
 const FlowLayoutPanel = require('./controls/FlowLayoutPanel');
 const DataGridView = require('./controls/DataGridView');
@@ -36,6 +37,7 @@ module.exports = {
     Label,
     ComboBox,
     CheckBox,
+    RadioButton,
     Panel,
     FlowLayoutPanel,
     DataGridView,

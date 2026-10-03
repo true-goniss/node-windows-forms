@@ -8,6 +8,7 @@ exports.NumericUpDown = require('./NumericUpDown');
 exports.Panel = require('./Panel');
 exports.FlowLayoutPanel = require('./FlowLayoutPanel');
 exports.CheckBox = require('./CheckBox');
+exports.RadioButton = require('./RadioButton');
 exports.ComboBox = require('./ComboBox');
 exports.ListBox = require('./ListBox');
 exports.PictureBox = require('./PictureBox');
