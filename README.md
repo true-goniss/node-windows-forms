@@ -70,7 +70,7 @@ main().catch(console.error);
 
 ## Features
 
-- **Standard Controls:** `Form`, `Button`, `TextBox`, `Label`, `NumericUpDown`, `ComboBox`, `CheckBox`, `RadioButton`, `Panel`, `FlowLayoutPanel`, `ListBox`, `PictureBox`, `ProgressBar`, `TabControl`
+- **Standard Controls:** `Form`, `Button`, `TextBox`, `Label`, `NumericUpDown`, `ComboBox`, `CheckBox`, `RadioButton`, `TrackBar`, `Panel`, `FlowLayoutPanel`, `ListBox`, `PictureBox`, `ProgressBar`, `TabControl`
 - **Advanced Controls:** `DataGridView` (Bidirectional data access), `MenuStrip`, `ContextMenuStrip`.
 - **System Tray:** `NotifyIcon` allows your Node.js apps to live silently in the taskbar.
 - **Native Dialogs:** `MessageBox`, `OpenFileDialog`, `SaveFileDialog`, `FolderBrowserDialog`.
