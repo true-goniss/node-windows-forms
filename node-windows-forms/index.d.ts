@@ -74,6 +74,18 @@ declare module "node-windows-forms" {
         OnTextChanged: EventCallback;
     }
 
+    export class NumericUpDown extends Control {
+        constructor(session: WinFormsSession, parent?: Control);
+        Value: number;
+        Minimum: number;
+        Maximum: number;
+        DecimalPlaces: number;
+        Increment: number;
+        Hexadecimal: boolean;
+        ThousandsSeparator: boolean;
+        OnValueChanged: EventCallback;
+    }
+
     export class CheckBox extends Control {
         constructor(session: WinFormsSession, parent?: Control);
         Checked: boolean;

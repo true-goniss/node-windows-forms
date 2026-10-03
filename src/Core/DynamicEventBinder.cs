@@ -91,6 +91,17 @@ namespace NodeWindowsForms.Core
                     });
                 }
                 
+                if (eventName == "ValueChanged")
+                {
+                    var valThrottler = new Throttler(16, (state) => IpcHost.SendEvent(targetId, eventName, state));
+                    return new EventHandler((sender, e) =>
+                    {
+                        decimal val = 0;
+                        if (sender is NumericUpDown nud) val = nud.Value;
+                        valThrottler.Invoke(new { Type = e.GetType().Name, value = val });
+                    });
+                }
+                
                 if (eventName == "CheckedChanged")
                 {
                     return new EventHandler((sender, e) =>

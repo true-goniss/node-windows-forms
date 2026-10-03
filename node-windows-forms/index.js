@@ -4,6 +4,7 @@ const { WinFormsSession } = require('./NodeWinForms');
 const Form = require('./controls/Form');
 const Button = require('./controls/Button');
 const TextBox = require('./controls/TextBox');
+const NumericUpDown = require('./controls/NumericUpDown');
 const Label = require('./controls/Label');
 const ComboBox = require('./controls/ComboBox');
 const CheckBox = require('./controls/CheckBox');
@@ -31,6 +32,7 @@ module.exports = {
     Form,
     Button,
     TextBox,
+    NumericUpDown,
     Label,
     ComboBox,
     CheckBox,

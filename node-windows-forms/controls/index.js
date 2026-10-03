@@ -4,6 +4,7 @@ exports.Form = require('./Form');
 exports.Label = require('./Label');
 exports.Button = require('./Button');
 exports.TextBox = require('./TextBox');
+exports.NumericUpDown = require('./NumericUpDown');
 exports.Panel = require('./Panel');
 exports.FlowLayoutPanel = require('./FlowLayoutPanel');
 exports.CheckBox = require('./CheckBox');

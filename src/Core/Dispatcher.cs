@@ -539,8 +539,12 @@ namespace NodeWindowsForms.Core
                     return Enum.ToObject(type, el.GetInt32());
                 }
             }
+            
+            if (type == typeof(decimal)) return Convert.ToDecimal(el.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+            if (type == typeof(double)) return Convert.ToDouble(el.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+            if (type == typeof(float)) return Convert.ToSingle(el.ToString(), System.Globalization.CultureInfo.InvariantCulture);
 
-            return Convert.ChangeType(el.ToString(), type);
+            return Convert.ChangeType(el.ToString(), type, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public Type GetControlType(string typeName)

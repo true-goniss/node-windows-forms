@@ -222,6 +222,18 @@ class Control extends EventEmitter {
 
     async setProperty(name, value) { return this._SetProperty(name, value); }
     async getProperty(name) { return this._GetProperty(name); }
+
+    async focus() {
+        return this.invokeMethod('Focus');
+    }
+
+    get focused() {
+        // This makes an async call under the hood, but in the new wrapper 
+        // we generally handle read-only live states via getProperty.
+        // For convenience, we can return the promise.
+        return this._GetProperty('Focused');
+    }
+    
     
     /**
      * Creates a synchronous accessor (getter/setter) for a C# property.
