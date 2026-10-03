@@ -1,4 +1,4 @@
-const { WinFormsSession, Form, NumericUpDown } = require('./node-windows-forms');
+const { WinFormsSession, Form, NumericUpDown } = require('../node-windows-forms');
 
 async function main() {
     const session = new WinFormsSession();

@@ -19,6 +19,7 @@ const NotifyIcon = require('./controls/NotifyIcon');
 const ListBox = require('./controls/ListBox');
 const PictureBox = require('./controls/PictureBox');
 const ProgressBar = require('./controls/ProgressBar');
+const TrackBar = require('./controls/TrackBar');
 const TabControl = require('./controls/TabControl');
 const TabPage = require('./controls/TabPage');
 
@@ -48,6 +49,7 @@ module.exports = {
     ListBox,
     PictureBox,
     ProgressBar,
+    TrackBar,
     TabControl,
     TabPage,
 

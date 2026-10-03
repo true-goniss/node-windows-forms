@@ -72,6 +72,12 @@ class Control extends EventEmitter {
             }
         });
 
+        super.on('ValueChanged', (data) => {
+            if (data && data.value !== undefined) {
+                this._state['Value'] = data.value;
+            }
+        });
+
         // Layout & Styling properties
         this._createPropertyAccessor('Dock');
         this._createPropertyAccessor('Anchor');

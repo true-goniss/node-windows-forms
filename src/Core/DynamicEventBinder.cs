@@ -98,7 +98,19 @@ namespace NodeWindowsForms.Core
                     {
                         decimal val = 0;
                         if (sender is NumericUpDown nud) val = nud.Value;
+                        else if (sender is TrackBar tb) val = tb.Value;
                         valThrottler.Invoke(new { Type = e.GetType().Name, value = val });
+                    });
+                }
+                
+                if (eventName == "Scroll")
+                {
+                    var scrollThrottler = new Throttler(16, (state) => IpcHost.SendEvent(targetId, eventName, state));
+                    return new EventHandler((sender, e) =>
+                    {
+                        int val = 0;
+                        if (sender is TrackBar tb) val = tb.Value;
+                        scrollThrottler.Invoke(new { Type = e.GetType().Name, value = val });
                     });
                 }
                 

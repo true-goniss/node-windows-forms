@@ -13,6 +13,7 @@ exports.ComboBox = require('./ComboBox');
 exports.ListBox = require('./ListBox');
 exports.PictureBox = require('./PictureBox');
 exports.ProgressBar = require('./ProgressBar');
+exports.TrackBar = require('./TrackBar');
 exports.TabControl = require('./TabControl');
 exports.TabPage = require('./TabPage');
 exports.MessageBox = require('../dialogs/MessageBox');

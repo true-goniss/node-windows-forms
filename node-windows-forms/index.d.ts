@@ -173,6 +173,19 @@ declare module "node-windows-forms" {
         Maximum: number;
     }
 
+    export class TrackBar extends Control {
+        constructor(session: WinFormsSession, parent?: Control);
+        Value: number;
+        Minimum: number;
+        Maximum: number;
+        TickFrequency: number;
+        Orientation: "Horizontal" | "Vertical";
+        SmallChange: number;
+        LargeChange: number;
+        OnValueChanged: EventCallback;
+        OnScroll: EventCallback;
+    }
+
     export class TabControl extends Control {
         constructor(session: WinFormsSession, parent?: Control);
         SelectedIndex: number;
