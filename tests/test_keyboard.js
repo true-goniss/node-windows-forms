@@ -20,17 +20,17 @@ async function main() {
     textBox.Left = 20;
     textBox.Width = 300;
 
-    // Attach KeyDown
+
     textBox.OnKeyDown.Attach((e) => {
         console.log(`[KeyDown] KeyCode: ${e.keyCode}, KeyValue: ${e.keyValue}, Modifiers: ${e.modifiers}`);
     });
 
-    // Attach KeyPress
+
     textBox.OnKeyPress.Attach((e) => {
         console.log(`[KeyPress] KeyChar: ${e.keyChar}`);
     });
 
-    // Attach KeyUp
+
     textBox.OnKeyUp.Attach((e) => {
         console.log(`[KeyUp] KeyCode: ${e.keyCode}, Modifiers: ${e.modifiers}`);
         

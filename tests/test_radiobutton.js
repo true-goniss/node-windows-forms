@@ -39,7 +39,7 @@ async function main() {
 
     console.log('Testing programmatically changing Checked state...');
     
-    // Test logic
+
     setTimeout(async () => {
         console.log('Programmatically selecting Option B...');
         radio2.Checked = true;

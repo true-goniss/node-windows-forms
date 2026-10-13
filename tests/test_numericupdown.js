@@ -14,7 +14,7 @@ async function main() {
     nud.Top = 50;
     nud.Width = 100;
     
-    // Set properties
+
     nud.Minimum = 0;
     nud.Maximum = 100;
     nud.Value = 50;
@@ -37,7 +37,7 @@ async function main() {
         console.log('Set value to 75.5');
     }, 2000);
 
-    // Keep it running for a bit then close
+
     setTimeout(() => {
         process.exit(0);
     }, 5000);

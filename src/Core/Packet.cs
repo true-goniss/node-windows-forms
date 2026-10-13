@@ -17,6 +17,9 @@ namespace NodeWindowsForms.Core
 
         [JsonPropertyName("args")]
         public JsonElement Args { get; set; } // Raw JSON for flexibility
+
+        [JsonIgnore]
+        public byte[] BinaryPayload { get; set; }
     }
 
     // Message sent back to Node.js

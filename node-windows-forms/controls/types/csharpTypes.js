@@ -63,8 +63,23 @@ class Color {
     }
 }
 
+class Font {
+    constructor(name, size, style = "Regular") {
+        this.name = name;
+        this.size = size;
+        this.style = style;
+    }
+    toJSON() {
+        return { name: this.name, size: this.size, style: this.style };
+    }
+    toString() {
+        return JSON.stringify(this.toJSON());
+    }
+}
+
 module.exports = {
     Point,
     Size,
-    Color
+    Color,
+    Font
 }

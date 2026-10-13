@@ -58,7 +58,7 @@ async function run() {
 
         const btnAddRow = fileMenu.addMenuItem("Add Random User");
         const btnReadRow = fileMenu.addMenuItem("Read Selected User");
-        fileMenu.addMenuItem("-"); // Separator (renders as divider line when text = "-")
+        fileMenu.addMenuItem("-"); // Separator
         const btnExit = fileMenu.addMenuItem("Exit App");
 
         const btnAbout = helpMenu.addMenuItem("About");

@@ -12,6 +12,9 @@ public class PipeMessage
 	public string Tag { get; set; } = ""; // Additional metadata (reserved)
 	public string Action { get; set; }   // Action/event name
 	public object Payload { get; set; }  // JSON-serializable payload passed between processes as plain text
+
+	[System.Text.Json.Serialization.JsonIgnore]
+	public byte[] BinaryPayload { get; set; } // Raw binary payload, appended after JSON data
 }
 
 // Command execution result (generic response wrapper)

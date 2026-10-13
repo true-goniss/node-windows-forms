@@ -127,11 +127,11 @@ class Control extends EventEmitter {
         };
     }
 
-    async _SetProperty(name, value) {
+    async _SetProperty(name, value, binaryPayload = null) {
         if (this.isDisposed) throw new Error(`Cannot set property ${name} on disposed control ${this.id}`);
         // [FIX] Send value directly. 
         // If Point/Size, external JSON.stringify will invoke toJSON() and embed object.
-        return this.session.send(this.id, 'setProperty', { name, value: value });
+        return this.session.send(this.id, 'setProperty', { name, value: value }, { binaryPayload });
     }
 
     async _GetProperty(name) {

@@ -13,7 +13,7 @@ async function runTests() {
         await form.setTitle("Automated Test Form");
         console.log("✅ Form created and title set.");
         
-        // Let it live for 2 seconds to ensure no crashes
+
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         console.log("✅ All tests passed. Exiting.");

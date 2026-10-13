@@ -23,6 +23,9 @@ const TrackBar = require('./controls/TrackBar');
 const TabControl = require('./controls/TabControl');
 const TabPage = require('./controls/TabPage');
 
+// Types
+const { Point, Size, Color, Font } = require('./controls/types/csharpTypes');
+
 // Dialogs
 const MessageBox = require('./dialogs/MessageBox');
 const OpenFileDialog = require('./dialogs/OpenFileDialog');
@@ -52,6 +55,12 @@ module.exports = {
     TrackBar,
     TabControl,
     TabPage,
+
+    // Types
+    Point,
+    Size,
+    Color,
+    Font,
 
     MessageBox,
     OpenFileDialog,

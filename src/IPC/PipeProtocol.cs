@@ -21,14 +21,14 @@ public static class PipeProtocol
 	};
 
 	public static readonly PipeMessage HeartbeatMessage = new PipeMessage { Type = MessageType.Event, Action = PipeActions.Heartbeat };
-	private static readonly byte[] _zeroLength = new byte[4];
+	private static readonly byte[] _zeroLength = new byte[8];
 
 	public static async Task SendAsync(Stream stream, PipeMessage message, CancellationToken ct)
 	{
 		// Zero payload for Heartbeat
 		if (message.Action == PipeActions.Heartbeat)
 		{
-			await stream.WriteAsync(_zeroLength, 0, 4, CancellationToken.None).WaitAsync(ct).ConfigureAwait(false);
+			await stream.WriteAsync(_zeroLength, 0, 8, CancellationToken.None).WaitAsync(ct).ConfigureAwait(false);
 			await stream.FlushAsync(CancellationToken.None).WaitAsync(ct).ConfigureAwait(false);
 			return;
 		}
@@ -36,17 +36,23 @@ public static class PipeProtocol
 		// Serialize directly to UTF-8 byte array (avoid string allocations)
 		byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, _opts);
 		int byteCount = jsonBytes.Length;
-		int totalLength = byteCount + 4;
+		int binaryCount = message.BinaryPayload?.Length ?? 0;
+		int totalLength = byteCount + 8 + binaryCount;
 		
 		// Rent 1 combined buffer for payload length prefix and data
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(totalLength);
 		try
 		{
-			// Write 4-byte length prefix without allocation (instead of BitConverter.GetBytes)
+			// Write lengths without allocation
 			System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(new Span<byte>(buffer, 0, 4), byteCount);
+			System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(new Span<byte>(buffer, 4, 4), binaryCount);
 			
 			// Copy payload right after the length header
-			jsonBytes.CopyTo(new Span<byte>(buffer, 4, byteCount));
+			jsonBytes.CopyTo(new Span<byte>(buffer, 8, byteCount));
+			if (binaryCount > 0)
+			{
+				message.BinaryPayload.CopyTo(new Span<byte>(buffer, 8 + byteCount, binaryCount));
+			}
 
 			// Send as a single continuous block = 1 system call to kernel
 			await stream.WriteAsync(buffer, 0, totalLength, CancellationToken.None).WaitAsync(ct).ConfigureAwait(false);
@@ -88,23 +94,24 @@ public static class PipeProtocol
 	/// </summary>
 	private static async Task<PipeMessage> ReadInternalAsync(Stream stream, CancellationToken ct)
 	{
-		// Read length header (4 bytes)
-		byte[] lenBuffer = ArrayPool<byte>.Shared.Rent(4);
+		// Read length header (8 bytes)
+		byte[] lenBuffer = ArrayPool<byte>.Shared.Rent(8);
 		try
 		{
-			int bytesRead = await ReadExactAsync(stream, lenBuffer, 4, ct).ConfigureAwait(false);
+			int bytesRead = await ReadExactAsync(stream, lenBuffer, 8, ct).ConfigureAwait(false);
 			if (bytesRead == 0) 
 				return null; // Graceful disconnect
 
 			// Read length value without allocation
 			int dataLength = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(new ReadOnlySpan<byte>(lenBuffer, 0, 4));
+			int binaryLength = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(new ReadOnlySpan<byte>(lenBuffer, 4, 4));
 			
 			// Zero payload length indicates Heartbeat
-			if (dataLength == 0)
+			if (dataLength == 0 && binaryLength == 0)
 				return HeartbeatMessage;
 
-			if (dataLength < 0 || dataLength > MaxMessageSize)
-				throw new IOException($"Invalid message length {dataLength} (possible corruption).");
+			if (dataLength < 0 || dataLength > MaxMessageSize || binaryLength < 0 || binaryLength > MaxMessageSize)
+				throw new IOException($"Invalid message lengths: JSON {dataLength}, Binary {binaryLength} (possible corruption).");
 
 			// Read exact message payload body
 			byte[] dataBuffer = ArrayPool<byte>.Shared.Rent(dataLength);
@@ -114,7 +121,19 @@ public static class PipeProtocol
 				
 				// Deserialize directly from bytes (no intermediate string allocation)
 				var span = new ReadOnlySpan<byte>(dataBuffer, 0, dataLength);
-				return JsonSerializer.Deserialize<PipeMessage>(span, _opts);
+				var message = JsonSerializer.Deserialize<PipeMessage>(span, _opts);
+
+				if (binaryLength > 0)
+				{
+					byte[] binBuffer = new byte[binaryLength]; // Will be stored in the object, no pooling
+					await ReadExactAsync(stream, binBuffer, binaryLength, ct).ConfigureAwait(false);
+					if (message != null)
+					{
+						message.BinaryPayload = binBuffer;
+					}
+				}
+
+				return message;
 			}
 			finally
 			{

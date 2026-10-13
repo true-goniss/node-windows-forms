@@ -12,7 +12,6 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 async function runTests() {
     console.log("=== TESTING MULTI-WINDOW AND DIALOGS ===");
 
-    // Automatically uses ../bin/node-windows-forms.exe
     const session = new WinFormsSession();
 
     session.on('error', (err) => console.error("[CRITICAL IPC ERROR]:", err));
@@ -49,7 +48,6 @@ async function runTests() {
 
         btn.OnClick.Attach(async () => {
             console.log("[JS] Button clicked, showing MessageBox...");
-            // Async in JS, doesn't block Node event loop
             const result = await MessageBox.show(session, "Hello from Node.js!", "Title", "YesNo", "Information");
             console.log(`[JS] User clicked: ${result}`);
 

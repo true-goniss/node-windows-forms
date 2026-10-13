@@ -137,15 +137,19 @@ class WinFormsSession extends EventEmitter {
             payload: args 
         };
         
-        if (!this._batchQueue) {
-            this._batchQueue = [];
-            process.nextTick(() => this._flushBatch());
+        if (options.binaryPayload) {
+            packet.binaryPayload = options.binaryPayload;
+            this.protocol.send(packet);
+        } else {
+            if (!this._batchQueue) {
+                this._batchQueue = [];
+                process.nextTick(() => this._flushBatch());
+            }
+            this._batchQueue.push(packet);
         }
-        
-        this._batchQueue.push(packet);
 
         // Auto-flush if batch gets too large to prevent IPC explosion
-        if (this._batchQueue.length >= 500) {
+        if (this._batchQueue && this._batchQueue.length >= 500) {
             this._flushBatch();
         }
 

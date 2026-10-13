@@ -108,7 +108,7 @@ public class PipeServer
 					try { OnClientConnected?.Invoke(clientId); }
 					catch { }
 				});
-				Console.WriteLine($"[Server] Client registered: {clientId}");
+				// Console.WriteLine($"[Server] Client registered: {clientId}");
 
 				using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, session.Cts.Token);
 				while (stream.IsConnected && !linkedCts.IsCancellationRequested)

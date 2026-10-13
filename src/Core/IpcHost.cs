@@ -133,7 +133,8 @@ namespace NodeWindowsForms.Core
                     Id = msg.Id,
                     Action = msg.Action,
                     TargetId = msg.TargetId,
-                    Args = argsElement
+                    Args = argsElement,
+                    BinaryPayload = msg.BinaryPayload
                 };
                 
                 object result = await _dispatcher.DispatchAsync(inbound);

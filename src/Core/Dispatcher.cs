@@ -223,6 +223,13 @@ namespace NodeWindowsForms.Core
 
 
                 // --- COMPLEX TYPES HANDLING ---
+                if (prop.PropertyType == typeof(System.Drawing.Image) && msg.BinaryPayload != null && msg.BinaryPayload.Length > 0)
+                {
+                    var ms = new System.IO.MemoryStream(msg.BinaryPayload);
+                    System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+                    prop.SetValue(target, img);
+                    return null;
+                }
                 if (prop.PropertyType == typeof(Point))
                 {
                     // [FIX] valEl is a JSON object. Read properties directly using lowercase ('x', 'y') as defined in JS Point.toJSON().
@@ -240,6 +247,23 @@ namespace NodeWindowsForms.Core
                     int height = valEl.GetProperty("height").GetInt32();
                     Size s = new Size(width, height);
                     prop.SetValue(target, s);
+                    return null;
+                }
+
+                if (prop.PropertyType == typeof(System.Drawing.Font))
+                {
+                    string fontName = valEl.GetProperty("name").GetString();
+                    float fontSize = (float)valEl.GetProperty("size").GetDouble();
+                    string fontStyleStr = valEl.GetProperty("style").GetString();
+                    
+                    System.Drawing.FontStyle style = System.Drawing.FontStyle.Regular;
+                    if (!string.IsNullOrEmpty(fontStyleStr))
+                    {
+                        Enum.TryParse<System.Drawing.FontStyle>(fontStyleStr, true, out style);
+                    }
+                    
+                    System.Drawing.Font font = new System.Drawing.Font(fontName, fontSize, style);
+                    prop.SetValue(target, font);
                     return null;
                 }
                 
@@ -537,6 +561,15 @@ namespace NodeWindowsForms.Core
                 if (el.ValueKind == JsonValueKind.Number)
                 {
                     return Enum.ToObject(type, el.GetInt32());
+                }
+            }
+            
+            if (type == typeof(System.Windows.Forms.Cursor) && el.ValueKind == JsonValueKind.String)
+            {
+                var prop = typeof(System.Windows.Forms.Cursors).GetProperty(el.GetString(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.IgnoreCase);
+                if (prop != null)
+                {
+                    return prop.GetValue(null);
                 }
             }
             
