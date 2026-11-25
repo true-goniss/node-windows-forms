@@ -80,12 +80,42 @@ class WinFormsSession extends EventEmitter {
         });
     }
 
+    // Tear down the session: stop the heartbeat, close the pipe, reject
+    // pending requests and terminate the spawned C# host.
+    // Safe to call multiple times; in attach mode just closes the connection.
+    stop() {
+        if (this._heartbeatInterval) {
+            clearInterval(this._heartbeatInterval);
+            this._heartbeatInterval = null;
+        }
+        if (this.protocol) {
+            // Detach before destroying the socket so the error relay
+            // (protocol 'error' -> session 'error') can't crash on teardown
+            this.protocol.removeAllListeners();
+            this.protocol = null;
+        }
+        if (this.socket) {
+            this.socket.destroy();
+            this.socket = null;
+        }
+        for (const pending of this.pendingRequests.values()) {
+            if (pending.timer) clearTimeout(pending.timer);
+            pending.reject(new Error("Session stopped"));
+        }
+        this.pendingRequests.clear();
+        if (this.process) {
+            this.process.kill();
+            this.process = null;
+        }
+    }
+
     _connectPipe(pipeId, resolve, reject, retries = 10) {
         const pipePath = `\\\\.\\pipe\\${pipeId}`;
         let isConnected = false;
         
         const socket = net.createConnection(pipePath, () => {
             isConnected = true;
+            this.socket = socket;
             this.protocol = new PipeProtocol(socket);
             
             // Handshake (Register = 0)
