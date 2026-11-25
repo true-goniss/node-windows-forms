@@ -482,6 +482,94 @@ namespace NodeWindowsForms.Core
                     }
                 }
 
+                if (target is TreeView tv)
+                {
+                    // Node operations go through the TreeViewBridge pseudo-methods:
+                    // generic invokeMethod cannot express TreeNode arguments/returns
+                    JsonElement methodArgs = msg.Args.GetProperty("args");
+                    string parentId = methodArgs.TryGetProperty("parentId", out var parentIdEl) && parentIdEl.ValueKind == JsonValueKind.String
+                        ? parentIdEl.GetString() : null;
+
+                    if (methodName == "AddNode")
+                    {
+                        return TreeViewBridge.AddNode(tv, methodArgs, parentId);
+                    }
+                    if (methodName == "AddNodes")
+                    {
+                        return TreeViewBridge.AddNodes(tv, methodArgs.GetProperty("nodes"), parentId);
+                    }
+                    if (methodName == "RemoveNode")
+                    {
+                        TreeViewBridge.RemoveNode(methodArgs.GetProperty("nodeId").GetString());
+                        return null;
+                    }
+                    if (methodName == "ClearNodes")
+                    {
+                        TreeViewBridge.ClearNodes(tv);
+                        return null;
+                    }
+                    if (methodName == "ExpandNode")
+                    {
+                        TreeNode node = TreeViewBridge.Resolve(methodArgs.GetProperty("nodeId").GetString());
+                        if (node == null) throw new Exception("Node not found");
+                        if (methodArgs.TryGetProperty("all", out var allEl) && allEl.GetBoolean()) node.ExpandAll();
+                        else node.Expand();
+                        return null;
+                    }
+                    if (methodName == "CollapseNode")
+                    {
+                        TreeNode node = TreeViewBridge.Resolve(methodArgs.GetProperty("nodeId").GetString());
+                        if (node == null) throw new Exception("Node not found");
+                        node.Collapse();
+                        return null;
+                    }
+                    if (methodName == "ExpandAll")
+                    {
+                        tv.ExpandAll();
+                        return null;
+                    }
+                    if (methodName == "CollapseAll")
+                    {
+                        tv.CollapseAll();
+                        return null;
+                    }
+                    if (methodName == "GetNode")
+                    {
+                        TreeNode node = TreeViewBridge.Resolve(methodArgs.GetProperty("nodeId").GetString());
+                        if (node == null) throw new Exception("Node not found");
+                        return TreeViewBridge.DescribeNode(node);
+                    }
+                    if (methodName == "GetNodes")
+                    {
+                        TreeNode parent = TreeViewBridge.Resolve(parentId);
+                        var nodes = parent != null ? parent.Nodes : tv.Nodes;
+                        var result = new List<object>();
+                        foreach (TreeNode n in nodes)
+                        {
+                            result.Add(TreeViewBridge.DescribeNode(n));
+                        }
+                        return result;
+                    }
+                    if (methodName == "GetSelectedNode")
+                    {
+                        return tv.SelectedNode != null ? TreeViewBridge.DescribeNode(tv.SelectedNode) : null;
+                    }
+                    if (methodName == "SetSelectedNode")
+                    {
+                        TreeNode node = TreeViewBridge.Resolve(methodArgs.GetProperty("nodeId").GetString());
+                        if (node == null) throw new Exception("Node not found");
+                        tv.SelectedNode = node;
+                        return null;
+                    }
+                    if (methodName == "SetNodeTag")
+                    {
+                        TreeNode node = TreeViewBridge.Resolve(methodArgs.GetProperty("nodeId").GetString());
+                        if (node == null) throw new Exception("Node not found");
+                        node.Tag = methodArgs.GetProperty("tag").GetString();
+                        return null;
+                    }
+                }
+
                 int argCount = 0;
                 JsonElement argsEl = default;
                 bool hasArgs = msg.Args.TryGetProperty("args", out argsEl) && argsEl.ValueKind == JsonValueKind.Array;

@@ -308,11 +308,11 @@ class Control extends EventEmitter {
     }
 }
 
-// Определяем OnMouseMove
-Object.defineProperty(Control.prototype, 'OnMouseMove', 
+// Define OnMouseMove
+Object.defineProperty(Control.prototype, 'OnMouseMove',
     Control.prototype._createEventHandlerGetter('MouseMove'));
 
-// Определяем OnClick
+// Define OnClick
 Object.defineProperty(Control.prototype, 'OnClick', 
     Control.prototype._createEventHandlerGetter('Click'));
 

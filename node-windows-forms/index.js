@@ -12,6 +12,8 @@ const RadioButton = require('./controls/RadioButton');
 const Panel = require('./controls/Panel');
 const FlowLayoutPanel = require('./controls/FlowLayoutPanel');
 const DataGridView = require('./controls/DataGridView');
+const TreeView = require('./controls/TreeView');
+const TreeNode = require('./controls/TreeNode');
 const MenuStrip = require('./controls/MenuStrip');
 const ContextMenuStrip = require('./controls/ContextMenuStrip');
 const ToolStripMenuItem = require('./controls/ToolStripMenuItem');
@@ -45,6 +47,8 @@ module.exports = {
     Panel,
     FlowLayoutPanel,
     DataGridView,
+    TreeView,
+    TreeNode,
     MenuStrip,
     ContextMenuStrip,
     ToolStripMenuItem,

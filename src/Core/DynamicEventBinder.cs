@@ -239,6 +239,48 @@ namespace NodeWindowsForms.Core
                 });
             }
 
+            // --- TreeViewEventHandler (AfterSelect / AfterExpand / AfterCollapse) ---
+            if (eventHandlerType == typeof(TreeViewEventHandler))
+            {
+                return new TreeViewEventHandler((sender, e) =>
+                {
+                    IpcHost.SendEvent(targetId, eventName, new
+                    {
+                        node = TreeViewBridge.DescribeNode(e.Node),
+                        action = e.Action.ToString()
+                    });
+                });
+            }
+
+            // --- TreeNodeMouseClickEventHandler (NodeMouseClick / NodeMouseDoubleClick) ---
+            if (eventHandlerType == typeof(TreeNodeMouseClickEventHandler))
+            {
+                return new TreeNodeMouseClickEventHandler((sender, e) =>
+                {
+                    IpcHost.SendEvent(targetId, eventName, new
+                    {
+                        node = TreeViewBridge.DescribeNode(e.Node),
+                        location = new { x = e.X, y = e.Y },
+                        button = e.Button.ToString(),
+                        clicks = e.Clicks
+                    });
+                });
+            }
+
+            // --- TreeViewCancelEventHandler (BeforeExpand / BeforeSelect) ---
+            // Notification-only: e.Cancel cannot be honoured from async JS
+            if (eventHandlerType == typeof(TreeViewCancelEventHandler))
+            {
+                return new TreeViewCancelEventHandler((sender, e) =>
+                {
+                    IpcHost.SendEvent(targetId, eventName, new
+                    {
+                        node = TreeViewBridge.DescribeNode(e.Node),
+                        action = e.Action.ToString()
+                    });
+                });
+            }
+
             throw new NotSupportedException($"Event handler type {eventHandlerType.Name} not yet supported by IPC binder.");
         }
     }

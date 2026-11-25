@@ -1,7 +1,11 @@
 {
   "name": "node-windows-forms",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "A lightweight Node.js wrapper for native Windows Forms via IPC.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/true-goniss/node-windows-forms.git"
+  },
   "main": "node-windows-forms/index.js",
   "bin": {
     "nwf-build": "cli/build.js"
@@ -15,7 +19,7 @@
     "assets"
   ],
   "scripts": {
-    "test": "node test.js"
+    "test": "node tests/test.js"
   },
   "keywords": [
     "winforms",
@@ -26,10 +30,6 @@
     "ipc",
     "ui"
   ],
-	"repository": {
-	"type": "git",
-	"url": "git+https://github.com/true-goniss/node-windows-forms"
-  },
   "author": "",
   "type": "commonjs",
   "dependencies": {

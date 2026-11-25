@@ -132,6 +132,82 @@ declare module "node-windows-forms" {
         OnSelectionChanged: EventCallback;
     }
 
+    export interface TreeNodeDescriptor {
+        id: string;
+        text: string;
+        tag?: string;
+        parentId?: string | null;
+        level: number;
+        isExpanded: boolean;
+        checked: boolean;
+        index: number;
+        fullPath: string;
+        childCount: number;
+    }
+
+    export interface TreeViewNodeSpec {
+        text: string;
+        tag?: string;
+        nodes?: TreeViewNodeSpec[];
+    }
+
+    export class TreeView extends Control {
+        constructor(session: WinFormsSession, parent?: Control);
+        CheckBoxes: boolean;
+        ShowLines: boolean;
+        ShowRootLines: boolean;
+        ShowPlusMinus: boolean;
+        FullRowSelect: boolean;
+        Scrollable: boolean;
+        HideSelection: boolean;
+        Indent: number;
+        ItemHeight: number;
+        PathSeparator: string;
+
+        addNode(textOrSpec: string | TreeViewNodeSpec): Promise<TreeNode>;
+        addNodes(nodes: TreeViewNodeSpec[]): Promise<TreeNode[]>;
+        clearNodes(): Promise<void>;
+        getNodes(parentId?: string): Promise<TreeNode[]>;
+        getSelectedNode(): Promise<TreeNode | null>;
+        setSelectedNode(nodeOrId: TreeNode | string): Promise<void>;
+        expandAll(): Promise<void>;
+        collapseAll(): Promise<void>;
+        nodeFromDescriptor(descriptor: TreeNodeDescriptor): TreeNode | null;
+
+        OnAfterSelect: EventCallback<{ node: TreeNodeDescriptor, action: string }>;
+        OnBeforeExpand: EventCallback<{ node: TreeNodeDescriptor, action: string }>;
+        OnAfterExpand: EventCallback<{ node: TreeNodeDescriptor, action: string }>;
+        OnAfterCollapse: EventCallback<{ node: TreeNodeDescriptor, action: string }>;
+        OnNodeMouseClick: EventCallback<{ node: TreeNodeDescriptor, location: { x: number, y: number }, button: string, clicks: number }>;
+        OnNodeMouseDoubleClick: EventCallback<{ node: TreeNodeDescriptor, location: { x: number, y: number }, button: string, clicks: number }>;
+    }
+
+    export class TreeNode {
+        constructor(session: WinFormsSession, id: string, treeView: TreeView, descriptor?: TreeNodeDescriptor);
+        id: string;
+        treeView: TreeView;
+        info: TreeNodeDescriptor | null;
+        Text: string;
+        Checked: boolean;
+        readonly tag: string | undefined;
+        readonly level: number | undefined;
+        readonly fullPath: string | undefined;
+
+        getText(): Promise<string>;
+        isChecked(): Promise<boolean>;
+        setTag(tag: string): Promise<void>;
+        addNode(textOrSpec: string | TreeViewNodeSpec): Promise<TreeNode>;
+        addNodes(nodes: TreeViewNodeSpec[]): Promise<TreeNode[]>;
+        nodes(): Promise<TreeNode[]>;
+        getParent(): Promise<TreeNode | null>;
+        remove(): Promise<void>;
+        expand(): Promise<void>;
+        expandAll(): Promise<void>;
+        collapse(): Promise<void>;
+        select(): Promise<void>;
+        refresh(): Promise<TreeNodeDescriptor>;
+    }
+
     export class MenuStrip extends Control {
         constructor(session: WinFormsSession, parent?: Control);
         addMenu(text: string): ToolStripMenuItem;
